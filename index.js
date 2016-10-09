@@ -211,10 +211,7 @@ function _sendEvents() {
       }
       return events.length < EVENT_SEND_COUNT;
     });
-    console.log("events:",events);
-
     const default_props = _.pick(events[0],DEFAULT_BUNDLE_PROP_LIST);
-    console.log("default_props:",default_props);
     const bundle = _.extend({},g_defaultBundle,default_props,{
       api_key: g_apiKey,
     });
@@ -231,7 +228,6 @@ function _sendEvents() {
       body: bundle,
       json: true,
     };
-    console.log(bundle);
 
     request(opts,(err,response,body) => {
       let remove = true;
