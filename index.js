@@ -20,7 +20,6 @@ const STRING_PROP_LIST = [
   'family',
   'genus',
   'species',
-  'group_tag',
   'spend_currency',
   'spend_type',
 ];
