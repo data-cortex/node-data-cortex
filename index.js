@@ -165,7 +165,11 @@ function _internalEventAdd(input_props,type) {
   _.each(STRING_PROP_LIST,(p) => {
     if (p in props) {
       let val = props[p];
-      val.toString().slice(0,32);
+      if (val && val.toString) {
+        val = val.toString().slice(0,32);
+      } else {
+        val = "";
+      }
       props[p] = val;
     }
   });
