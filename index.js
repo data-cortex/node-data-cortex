@@ -7,6 +7,7 @@ exports.init = init;
 exports.flush = flush;
 exports.isReady = isReady;
 exports.install = install;
+exports.dau = dau;
 exports.event = event;
 exports.economy = economy;
 
@@ -128,6 +129,13 @@ function install(props) {
     throw new Error('props must be an object');
   }
   _internalEventAdd(props,"install");
+}
+
+function dau(props) {
+  if (!props || typeof props !== 'object') {
+    throw new Error('props must be an object');
+  }
+  _internalEventAdd(props,"dau");
 }
 
 function event(props) {
