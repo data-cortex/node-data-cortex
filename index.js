@@ -6,6 +6,7 @@ const request = require('request');
 exports.init = init;
 exports.flush = flush;
 exports.isReady = isReady;
+exports.install = install;
 exports.event = event;
 exports.economy = economy;
 
@@ -120,6 +121,13 @@ function init(opts,done) {
 
   g_isReady = true;
   done();
+}
+
+function install(props) {
+  if (!props || typeof props !== 'object') {
+    throw new Error('props must be an object');
+  }
+  _internalEventAdd(props,"install");
 }
 
 function event(props) {
