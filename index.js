@@ -155,6 +155,9 @@ function economy(props) {
   if (typeof props.spend_amount != 'number') {
     throw new Error('spend_amount is required');
   }
+  if (!isFinite(props.spend_amount)) {
+    throw new Error('spend_amount must be finite');
+  }
   _internalEventAdd(props,"economy");
 }
 
