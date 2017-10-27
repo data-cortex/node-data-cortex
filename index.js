@@ -253,7 +253,7 @@ function _sendEvents() {
 
     request(opts,(err,response,body) => {
       let remove = true;
-      const status = response.statusCode;
+      const status = response && response.statusCode;
       if (err) {
         remove = false;
         g_delayCount++;
