@@ -1,15 +1,6 @@
 'use strict';
 
-const _ = require('lodash');
 const request = require('request');
-
-exports.init = init;
-exports.flush = flush;
-exports.isReady = isReady;
-exports.install = install;
-exports.dau = dau;
-exports.event = event;
-exports.economy = economy;
 
 const EVENT_SEND_COUNT = 10;
 const DELAY_MS = 500;
@@ -25,7 +16,6 @@ const STRING_PROP_LIST = [
   'spend_currency',
   'spend_type',
 ];
-
 const NUMBER_PROP_LIST = [
   'float1',
   'float2',
@@ -33,13 +23,11 @@ const NUMBER_PROP_LIST = [
   'float4',
   'spend_amount',
 ];
-
 const OTHER_PROP_LIST = [
   'type',
   'event_index',
   'event_datetime',
 ];
-
 const DEFAULT_BUNDLE_PROP_LIST = [
   'app_ver',
   'server_ver',
@@ -57,38 +45,39 @@ const DEFAULT_BUNDLE_PROP_LIST = [
   'group_tag',
 ];
 
-const EVENT_PROP_LIST = _.union(
+const EVENT_PROP_LIST = [].concat(
   STRING_PROP_LIST,
   NUMBER_PROP_LIST,
   OTHER_PROP_LIST
 );
-
-const BUNDLE_PROP_LIST = _.union(
+const BUNDLE_PROP_LIST = [].concat(
   EVENT_PROP_LIST,
   DEFAULT_BUNDLE_PROP_LIST
 );
 
 const API_BASE_URL = "https://api.data-cortex.com";
 
-let g_apiBaseUrl = API_BASE_URL;
+function DataCortex() {
+  this.apiBaseUrl = API_BASE_URL;
+  this.isReady = false;
+  this.isSending = false;
+  this.timeout = false;
+  this.apiKey = false;
+  this.orgName = false;
+  this.appVer = "0";
+  this.userTag = false;
+  this.eventList = [];
+  this.nextIndex = 0;
+  this.delayCount = 0;
+  this.defaultBundle = {};
+  return this;
+}
 
-let g_isReady = false;
-let g_isSending = false;
-let g_timeout = false;
+function create() {
+  return new DataCortex();
+}
 
-let g_apiKey = false;
-let g_orgName = false;
-let g_appVer = "0";
-
-let g_userTag = false;
-let g_eventList = [];
-let g_nextIndex = 0;
-
-let g_delayCount = 0;
-
-let g_defaultBundle = {}
-
-function init(opts,done) {
+DataCortex.prototype.init = function(opts,done) {
   if (!done) {
     done = function() {};
   }
@@ -99,12 +88,12 @@ function init(opts,done) {
     throw new Error('opts.orgName is required');
   }
 
-  g_apiKey = opts.apiKey;
-  g_orgName = opts.orgName;
+  this.apiKey = opts.apiKey;
+  this.orgName = opts.orgName;
 
-  g_apiBaseUrl = opts.baseUrl || API_BASE_URL;
+  this.apiBaseUrl = opts.baseUrl || API_BASE_URL;
 
-  g_defaultBundle = {
+  this.defaultBundle = {
     app_ver: opts.appVer || "0",
     device_type: opts.deviceType || "",
     os: opts.os || "",
@@ -113,39 +102,39 @@ function init(opts,done) {
   };
 
   if (opts.serverVer) {
-    g_defaultBundle.server_ver = opts.serverVer;
+    this.defaultBundle.server_ver = opts.serverVer;
   }
 
   if (!opts.noHupHandler) {
-    process.on('SIGHUP',flush);
+    process.on('SIGHUP',() => this.flush());
   }
 
-  g_isReady = true;
+  this.isReady = true;
   done();
-}
+};
 
-function install(props) {
+DataCortex.prototype.install = function(props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object');
   }
-  _internalEventAdd(props,"install");
-}
+  this._internalEventAdd(props,"install");
+};
 
-function dau(props) {
+DataCortex.prototype.dau = function(props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object');
   }
-  _internalEventAdd(props,"dau");
-}
+  this._internalEventAdd(props,"dau");
+};
 
-function event(props) {
+DataCortex.prototype.event = function(props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object');
   }
-  _internalEventAdd(props,"event");
-}
+  this._internalEventAdd(props,"event");
+};
 
-function economy(props) {
+DataCortex.prototype.economy = function(props) {
   if (!props || typeof props != 'object') {
     throw new Error('props must be an object');
   }
@@ -158,30 +147,30 @@ function economy(props) {
   if (!isFinite(props.spend_amount)) {
     throw new Error('spend_amount must be finite');
   }
-  _internalEventAdd(props,"economy");
-}
+  this._internalEventAdd(props,"economy");
+};
 
-function flush() {
-  _sendEvents();
-}
+DataCortex.prototype.flush = function() {
+  this._sendEvents();
+};
 
-function isReady() {
-  return g_isReady;
-}
+DataCortex.prototype.isReady = function() {
+  return this.isReady;
+};
 
-function _internalEventAdd(input_props,type) {
+DataCortex.prototype._internalEventAdd = function(input_props,type) {
   if (!input_props.device_tag) {
     throw new Error('device_tag is required');
   }
 
-  const props = _.extend({},input_props);
+  const props = Object.assign({},input_props);
   props.type = type;
-  props.event_index = g_nextIndex++;
+  props.event_index = this.nextIndex++;
   if (!props.event_datetime) {
     props.event_datetime = (new Date()).toISOString();
   }
 
-  _.each(STRING_PROP_LIST,(p) => {
+  STRING_PROP_LIST.forEach((p) => {
     if (p in props) {
       let val = props[p];
       if (val && val.toString) {
@@ -192,7 +181,7 @@ function _internalEventAdd(input_props,type) {
       props[p] = val;
     }
   });
-  _.each(NUMBER_PROP_LIST,(p) => {
+  NUMBER_PROP_LIST.forEach((p) => {
     if (p in props) {
       let val = props[p];
       if (typeof val != 'number') {
@@ -205,43 +194,43 @@ function _internalEventAdd(input_props,type) {
       }
     }
   });
-  g_eventList.push(_.pick(props,BUNDLE_PROP_LIST));
-  _sendEventsLater();
-}
+  this.eventList.push(_pick(props,BUNDLE_PROP_LIST));
+  this._sendEventsLater();
+};
 
-function _sendEventsLater(delay) {
+DataCortex.prototype._sendEventsLater = function(delay) {
   if (!delay) {
     delay = 0;
   }
-  if (!g_timeout && g_isReady && !g_isSending) {
-    g_timeout = setTimeout(() => {
-      g_timeout = false;
-      _sendEvents();
+  if (!this.timeout && this.isReady && !this.isSending) {
+    this.timeout = setTimeout(() => {
+      this.timeout = false;
+      this._sendEvents();
     },delay);
   }
-}
-function _sendEvents() {
-  if (g_isReady && !g_isSending && g_eventList.length > 0) {
-    g_isSending = true;
+};
+DataCortex.prototype._sendEvents = function() {
+  if (this.isReady && !this.isSending && this.eventList.length > 0) {
+    this.isSending = true;
 
     const events = [];
-    _.some(g_eventList,(e) => {
-      if (events.length == 0) {
+    this.eventList.some((e) => {
+      if (events.length === 0) {
         events.push(e);
       } else if (_defaultBundleEqual(events[0],e)) {
         events.push(e);
       }
       return events.length < EVENT_SEND_COUNT;
     });
-    const default_props = _.pick(events[0],DEFAULT_BUNDLE_PROP_LIST);
-    const bundle = _.extend({},g_defaultBundle,default_props,{
-      api_key: g_apiKey,
+    const default_props = _pick(events[0],DEFAULT_BUNDLE_PROP_LIST);
+    const bundle = Object.assign({},this.defaultBundle,default_props,{
+      api_key: this.apiKey,
     });
-    bundle.events = _.map(events,(e) => _.pick(e,EVENT_PROP_LIST));
+    bundle.events = events.map(e => _pick(e,EVENT_PROP_LIST));
 
     const current_time = encodeURIComponent((new Date()).toISOString());
-    const url = g_apiBaseUrl
-      + '/' + g_orgName + '/1/track'
+    const url = this.apiBaseUrl
+      + '/' + this.orgName + '/1/track'
       + "?current_time=" + current_time;
 
     const opts = {
@@ -256,43 +245,43 @@ function _sendEvents() {
       const status = response && response.statusCode;
       if (err) {
         remove = false;
-        g_delayCount++;
+        this.delayCount++;
       } else if (status == 400) {
         _errorLog("Bad request, please check parameters, error:",body);
       } else if (status == 403) {
         _errorLog("Bad API Key, error:",body);
-        g_isReady = false;
+        this.isReady = false;
       } else if (status == 409) {
         // Dup send?
       } else if (status != 200) {
         remove = false;
-        g_delayCount++;
+        this.delayCount++;
       } else {
-        g_delayCount = 0;
+        this.delayCount = 0;
       }
 
       if (remove) {
-        _removeEvents(bundle.events);
+        this._removeEvents(bundle.events);
       }
 
-      g_isSending = false;
-      if (g_eventList.length > 0) {
-        _sendEventsLater(g_delayCount * DELAY_MS);
+      this.isSending = false;
+      if (this.eventList.length > 0) {
+        this._sendEventsLater(this.delayCount * DELAY_MS);
       }
     });
   }
-}
+};
 
-function _removeEvents(event_list) {
-  g_eventList = _.filter(g_eventList,(e) => {
-    return !_.some(event_list,(e2) => {
+DataCortex.prototype._removeEvents = function(event_list) {
+  this.eventList = this.eventList.filter((e) => {
+    return !event_list.some((e2) => {
       return e.event_index == e2.event_index;
     });
   });
-}
+};
 
 function _defaultBundleEqual(a,b) {
-  return _.all(DEFAULT_BUNDLE_PROP_LIST,(prop) => a[prop] == b[prop]);
+  return DEFAULT_BUNDLE_PROP_LIST.every(prop => a[prop] === b[prop]);
 }
 
 function _errorLog() {
@@ -300,3 +289,25 @@ function _errorLog() {
   args.push.apply(args,arguments);
   console.error.apply(console,args);
 }
+
+function _pick(obj,prop_list) {
+  const new_obj = {};
+  prop_list.forEach(prop => {
+    const val = obj[prop];
+    if (val !== undefined) {
+      new_obj[prop] = val;
+    }
+  });
+  return new_obj;
+}
+
+const g_singleObject = create();
+
+exports.init = DataCortex.prototype.init.bind(g_singleObject);
+exports.flush = DataCortex.prototype.flush.bind(g_singleObject);
+exports.isReady = DataCortex.prototype.isReady.bind(g_singleObject);
+exports.install = DataCortex.prototype.install.bind(g_singleObject);
+exports.dau = DataCortex.prototype.dau.bind(g_singleObject);
+exports.event = DataCortex.prototype.event.bind(g_singleObject);
+exports.economy = DataCortex.prototype.economy.bind(g_singleObject);
+exports.create = create;

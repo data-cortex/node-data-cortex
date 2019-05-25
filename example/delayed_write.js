@@ -18,16 +18,16 @@ const opts = {
 dataCortex.init(opts);
 
 console.log("before delay");
-dataCortex.event({ kingdom: 'before delay'});
+dataCortex.event({ device_tag: '1234', kingdom: 'before delay'});
 
 setTimeout(() => {
   console.log("after delay");
-  dataCortex.event({ kingdom: 'after delay'});
+  dataCortex.event({ device_tag: '1234', kingdom: 'after delay'});
 },20*1000);
 
 setTimeout(() => {
   console.log("after second delay");
-  dataCortex.event({ kingdom: 'after second delay'});
+  dataCortex.event({ device_tag: '1234', kingdom: 'after second delay'});
   dataCortex.flush();
 },40*1000);
 
