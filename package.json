@@ -1,6 +1,6 @@
 {
   "name": "node-data-cortex",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Write data cortex events to bulk api endpoint",
   "main": "index.js",
   "scripts": {

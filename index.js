@@ -39,6 +39,7 @@ const DEFAULT_BUNDLE_PROP_LIST = [
   'os_ver',
   'browser',
   'browser_ver',
+  'marketplace',
   'country',
   'geo_ip_address',
   'language',
