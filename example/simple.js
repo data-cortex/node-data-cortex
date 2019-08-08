@@ -15,6 +15,7 @@ const opts = {
   apiKey: apiKey,
   orgName: 'test',
   appVer: '1.0.0',
+  serverVer: '0.0.11',
 };
 dataCortex.init(opts);
 
@@ -22,6 +23,9 @@ dataCortex.event({ device_tag: '123', kingdom: 'kingdom', species: 'species' });
 dataCortex.event({ device_tag: '123', event_datetime: new Date(), kingdom: 'date' });
 dataCortex.event({ device_tag: '123', kingdom: '"quotes""middle""' });
 dataCortex.event({ device_tag: '123', kingdom: "newline", });
+
+dataCortex.log("This is a log line");
+dataCortex.log("This is a log line with args",1,"foo",new Date(),new Error());
 
 dataCortex.flush();
 

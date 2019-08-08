@@ -3,6 +3,7 @@
 const request = require('request');
 
 const EVENT_SEND_COUNT = 10;
+const LOG_SEND_COUNT = 100;
 const DELAY_MS = 500;
 
 const STRING_PROP_LIST = [
@@ -66,11 +67,18 @@ function DataCortex() {
   this.apiKey = false;
   this.orgName = false;
   this.appVer = "0";
+  this.serverVer = "";
   this.userTag = false;
   this.eventList = [];
   this.nextIndex = 0;
   this.delayCount = 0;
   this.defaultBundle = {};
+
+  this.logList = [];
+  this.logTimeout = false;
+  this.isLogSending = false;
+  this.logDelayCount = 0;
+
   return this;
 }
 
@@ -91,6 +99,8 @@ DataCortex.prototype.init = function(opts,done) {
 
   this.apiKey = opts.apiKey;
   this.orgName = opts.orgName;
+  this.appVer = opts.appVer || "0";
+  this.serverVer = opts.serverVer || "";
 
   this.apiBaseUrl = opts.baseUrl || API_BASE_URL;
 
@@ -120,14 +130,12 @@ DataCortex.prototype.install = function(props) {
   }
   this._internalEventAdd(props,"install");
 };
-
 DataCortex.prototype.dau = function(props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object');
   }
   this._internalEventAdd(props,"dau");
 };
-
 DataCortex.prototype.event = function(props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object');
@@ -281,6 +289,161 @@ DataCortex.prototype._removeEvents = function(event_list) {
   });
 };
 
+DataCortex.prototype.log = function() {
+  if (!arguments || arguments.length === 0) {
+    throw new Error('log must have arguments');
+  }
+  let log_line = "";
+  for (let i = 0; i < arguments.length; i++) {
+    const arg = arguments[i];
+    if (i > 0) {
+      log_line += " ";
+    }
+
+    if (_isError(arg)) {
+      log_line += arg.stack;
+    } else if (typeof arg === 'object') {
+      try {
+        log_line += JSON.stringify(arg);
+      } catch (e) {
+        log_line += arg;
+      }
+    } else {
+      log_line += arg;
+    }
+  }
+  this.logEvent({ log_line });
+};
+
+const LOG_NUMBER_PROP_LIST = [
+  'repsonse_bytes',
+  'response_ms',
+];
+
+const LOG_STRING_PROP_MAP = {
+  'hostname': 64,
+  'filename': 256,
+  'log_level': 64,
+  'device_tag': 62,
+  'user_tag': 62,
+  'remote_address': 64,
+  'log_line': 65535,
+};
+
+const LOG_OTHER_PROP_LIST = ['event_datetime',];
+
+const LOG_PROP_LIST = _union(
+  LOG_NUMBER_PROP_LIST,
+  Object.keys(LOG_STRING_PROP_MAP),
+  LOG_OTHER_PROP_LIST
+);
+
+DataCortex.prototype.logEvent = function(props) {
+  if (!props || typeof props !== 'object') {
+    throw new Error('props must be an object.');
+  }
+
+  if (!props.event_datetime) {
+    props.event_datetime = (new Date()).toISOString();
+  }
+
+  _objectEach(LOG_STRING_PROP_MAP,(max_len,p) => {
+    if (p in props) {
+      const val = props[p];
+      const s = val && val.toString();
+      if (s) {
+        props[p] = s.slice(0,max_len);
+      } else {
+        delete props[p];
+      }
+    }
+  });
+  LOG_NUMBER_PROP_LIST.forEach(p => {
+    if (p in props) {
+      let val = props[p];
+      if (typeof val !== 'number') {
+        val = parseFloat(val);
+      }
+      if (isFinite(val)) {
+        props[p] = val;
+      } else {
+        delete props[p];
+      }
+    }
+  });
+
+  const e = _pick(props,LOG_PROP_LIST);
+  this.logList.push(e);
+  this._sendLogsLater();
+  return e;
+};
+
+DataCortex.prototype._removeLogs = function(events) {
+  this.logList.splice(0,events.length);
+};
+
+function _isError(e) {
+  return e && e.stack && e.message && typeof e.stack === 'string' && typeof e.message === 'string';
+}
+
+DataCortex.prototype._sendLogsLater = function(delay = 0) {
+  if (!this.logTimeout && this.isReady && !this.isLogSending) {
+    this.logTimeout = setTimeout(() => {
+      this.logTimeout = false;
+      this._sendLogs();
+    },delay);
+  }
+};
+DataCortex.prototype._sendLogs = function() {
+  if (this.isReady && !this.isLogSending && this.logList.length > 0) {
+    this.isLogSending = true;
+
+    const bundle = {
+      api_key: this.apiKey,
+      app_ver: this.serverVer || this.appVer,
+      events: this.logList.slice(0,LOG_SEND_COUNT),
+    };
+
+    const url = this.apiBaseUrl + '/' + this.orgName + '/1/app_log';
+
+    const opts = {
+      url: url,
+      method: 'POST',
+      body: bundle,
+      json: true,
+    };
+    request(opts,(err,response,body) => {
+      const status = response && response.statusCode;
+      let remove = true;
+      if (err === 'status') {
+        if (status === 400) {
+          _errorLog("Bad request, please check parameters, error:",body);
+        } else if (status === 403) {
+          _errorLog("Bad API Key, error:",body);
+        } else if (status === 409) {
+          // Dup send?
+        } else {
+          remove = false;
+          this.logDelayCount++;
+        }
+      } else if (err) {
+        remove = false;
+        this.logDelayCount++;
+      } else {
+        this.logDelayCount = 0;
+      }
+      if (remove) {
+        this._removeLogs(bundle.events);
+      }
+
+      this.isLogSending = false;
+      if (this.logList.length > 0) {
+        this._sendLogsLater(this.logDelayCount * DELAY_MS);
+      }
+    });
+  }
+};
+
 function _defaultBundleEqual(a,b) {
   return DEFAULT_BUNDLE_PROP_LIST.every(prop => a[prop] === b[prop]);
 }
@@ -301,6 +464,20 @@ function _pick(obj,prop_list) {
   });
   return new_obj;
 }
+function _objectEach(object,callback) {
+  Object.keys(object).forEach(key => {
+    const value = object[key];
+    callback(value,key,object);
+  });
+}
+function _union() {
+  const dest = [];
+  for (let i = 0; i < arguments.length; i++) {
+    const array = arguments[i];
+    Array.prototype.push.apply(dest, array);
+  }
+  return dest;
+}
 
 const g_singleObject = create();
 
@@ -311,4 +488,5 @@ exports.install = DataCortex.prototype.install.bind(g_singleObject);
 exports.dau = DataCortex.prototype.dau.bind(g_singleObject);
 exports.event = DataCortex.prototype.event.bind(g_singleObject);
 exports.economy = DataCortex.prototype.economy.bind(g_singleObject);
+exports.log = DataCortex.prototype.log.bind(g_singleObject);
 exports.create = create;
