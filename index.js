@@ -16,6 +16,10 @@ const STRING_PROP_LIST = [
   'species',
   'spend_currency',
   'spend_type',
+  'network',
+  'from_tag',
+  'to_tag',
+  'channel',
 ];
 const NUMBER_PROP_LIST = [
   'float1',
@@ -28,6 +32,7 @@ const OTHER_PROP_LIST = [
   'type',
   'event_index',
   'event_datetime',
+  'to_list',
 ];
 const DEFAULT_BUNDLE_PROP_LIST = [
   'app_ver',
@@ -141,6 +146,36 @@ DataCortex.prototype.event = function(props) {
     throw new Error('props must be an object');
   }
   this._internalEventAdd(props,"event");
+};
+DataCortex.prototype.messageSend = function(props) {
+  if (!props || typeof props !== 'object') {
+    throw new Error('props must be an object');
+  }
+  if (!props.network) {
+    throw new Error('network is required');
+  }
+  if (!props.from_tag) {
+    throw new Error('from_tag is required');
+  }
+  if (!props.to_list) {
+    throw new Error('to_list is required');
+  }
+  this._internalEventAdd(props,"message_send");
+};
+DataCortex.prototype.messageClick = function(props) {
+  if (!props || typeof props !== 'object') {
+    throw new Error('props must be an object');
+  }
+  if (!props.network) {
+    throw new Error('network is required');
+  }
+  if (!props.from_tag) {
+    throw new Error('from_tag is required');
+  }
+  if (!props.to_tag) {
+    throw new Error('to_tag is required');
+  }
+  this._internalEventAdd(props,"message_click");
 };
 
 DataCortex.prototype.economy = function(props) {
@@ -488,5 +523,7 @@ exports.install = DataCortex.prototype.install.bind(g_singleObject);
 exports.dau = DataCortex.prototype.dau.bind(g_singleObject);
 exports.event = DataCortex.prototype.event.bind(g_singleObject);
 exports.economy = DataCortex.prototype.economy.bind(g_singleObject);
+exports.messageSend = DataCortex.prototype.messageSend.bind(g_singleObject);
+exports.messageClick = DataCortex.prototype.messageClick.bind(g_singleObject);
 exports.log = DataCortex.prototype.log.bind(g_singleObject);
 exports.create = create;
