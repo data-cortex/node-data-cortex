@@ -29,12 +29,7 @@ const NUMBER_PROP_LIST = [
   'float4',
   'spend_amount',
 ];
-const OTHER_PROP_LIST = [
-  'type',
-  'event_index',
-  'event_datetime',
-  'to_list',
-];
+const OTHER_PROP_LIST = ['type', 'event_index', 'event_datetime', 'to_list'];
 const DEFAULT_BUNDLE_PROP_LIST = [
   'app_ver',
   'server_ver',
@@ -58,12 +53,9 @@ const EVENT_PROP_LIST = [].concat(
   NUMBER_PROP_LIST,
   OTHER_PROP_LIST
 );
-const BUNDLE_PROP_LIST = [].concat(
-  EVENT_PROP_LIST,
-  DEFAULT_BUNDLE_PROP_LIST
-);
+const BUNDLE_PROP_LIST = [].concat(EVENT_PROP_LIST, DEFAULT_BUNDLE_PROP_LIST);
 
-const API_BASE_URL = "https://api.data-cortex.com";
+const API_BASE_URL = 'https://api.data-cortex.com';
 
 function DataCortex() {
   this.apiBaseUrl = API_BASE_URL;
@@ -72,8 +64,8 @@ function DataCortex() {
   this.timeout = false;
   this.apiKey = false;
   this.orgName = false;
-  this.appVer = "0";
-  this.serverVer = "";
+  this.appVer = '0';
+  this.serverVer = '';
   this.userTag = false;
   this.eventList = [];
   this.nextIndex = 0;
@@ -92,9 +84,9 @@ function create() {
   return new DataCortex();
 }
 
-DataCortex.prototype.init = function(opts,done) {
+DataCortex.prototype.init = function (opts, done) {
   if (!done) {
-    done = function() {};
+    done = function () {};
   }
   if (!opts || !opts.apiKey) {
     throw new Error('opts.apiKey is required');
@@ -105,17 +97,17 @@ DataCortex.prototype.init = function(opts,done) {
 
   this.apiKey = opts.apiKey;
   this.orgName = opts.orgName;
-  this.appVer = opts.appVer || "0";
-  this.serverVer = opts.serverVer || "";
+  this.appVer = opts.appVer || '0';
+  this.serverVer = opts.serverVer || '';
 
   this.apiBaseUrl = opts.baseUrl || API_BASE_URL;
 
   this.defaultBundle = {
-    app_ver: opts.appVer || "0",
-    device_type: opts.deviceType || "",
-    os: opts.os || "",
-    os_ver: opts.osVer || "",
-    language: opts.language || "zz",
+    app_ver: opts.appVer || '0',
+    device_type: opts.deviceType || '',
+    os: opts.os || '',
+    os_ver: opts.osVer || '',
+    language: opts.language || 'zz',
   };
 
   if (opts.serverVer) {
@@ -123,32 +115,32 @@ DataCortex.prototype.init = function(opts,done) {
   }
 
   if (!opts.noHupHandler) {
-    process.on('SIGHUP',() => this.flush());
+    process.on('SIGHUP', () => this.flush());
   }
 
   this.isReady = true;
   done();
 };
 
-DataCortex.prototype.install = function(props) {
+DataCortex.prototype.install = function (props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object');
   }
-  this._internalEventAdd(props,"install");
+  this._internalEventAdd(props, 'install');
 };
-DataCortex.prototype.dau = function(props) {
+DataCortex.prototype.dau = function (props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object');
   }
-  this._internalEventAdd(props,"dau");
+  this._internalEventAdd(props, 'dau');
 };
-DataCortex.prototype.event = function(props) {
+DataCortex.prototype.event = function (props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object');
   }
-  this._internalEventAdd(props,"event");
+  this._internalEventAdd(props, 'event');
 };
-DataCortex.prototype.messageSend = function(props) {
+DataCortex.prototype.messageSend = function (props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object');
   }
@@ -161,9 +153,9 @@ DataCortex.prototype.messageSend = function(props) {
   if (!props.to_list) {
     throw new Error('to_list is required');
   }
-  this._internalEventAdd(props,"message_send");
+  this._internalEventAdd(props, 'message_send');
 };
-DataCortex.prototype.messageClick = function(props) {
+DataCortex.prototype.messageClick = function (props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object');
   }
@@ -176,10 +168,10 @@ DataCortex.prototype.messageClick = function(props) {
   if (!props.to_tag) {
     throw new Error('to_tag is required');
   }
-  this._internalEventAdd(props,"message_click");
+  this._internalEventAdd(props, 'message_click');
 };
 
-DataCortex.prototype.economy = function(props) {
+DataCortex.prototype.economy = function (props) {
   if (!props || typeof props != 'object') {
     throw new Error('props must be an object');
   }
@@ -192,36 +184,36 @@ DataCortex.prototype.economy = function(props) {
   if (!isFinite(props.spend_amount)) {
     throw new Error('spend_amount must be finite');
   }
-  this._internalEventAdd(props,"economy");
+  this._internalEventAdd(props, 'economy');
 };
 
-DataCortex.prototype.flush = function() {
+DataCortex.prototype.flush = function () {
   this._sendEvents();
 };
 
-DataCortex.prototype.isReady = function() {
+DataCortex.prototype.isReady = function () {
   return this.isReady;
 };
 
-DataCortex.prototype._internalEventAdd = function(input_props,type) {
+DataCortex.prototype._internalEventAdd = function (input_props, type) {
   if (!input_props.device_tag) {
     throw new Error('device_tag is required');
   }
 
-  const props = Object.assign({},input_props);
+  const props = Object.assign({}, input_props);
   props.type = type;
   props.event_index = this.nextIndex++;
   if (!props.event_datetime) {
-    props.event_datetime = (new Date()).toISOString();
+    props.event_datetime = new Date().toISOString();
   }
 
   STRING_PROP_LIST.forEach((p) => {
     if (p in props) {
       let val = props[p];
       if (val && val.toString) {
-        val = val.toString().slice(0,32);
+        val = val.toString().slice(0, 32);
       } else {
-        val = "";
+        val = '';
       }
       props[p] = val;
     }
@@ -239,11 +231,11 @@ DataCortex.prototype._internalEventAdd = function(input_props,type) {
       }
     }
   });
-  this.eventList.push(_pick(props,BUNDLE_PROP_LIST));
+  this.eventList.push(_pick(props, BUNDLE_PROP_LIST));
   this._sendEventsLater();
 };
 
-DataCortex.prototype._sendEventsLater = function(delay) {
+DataCortex.prototype._sendEventsLater = function (delay) {
   if (!delay) {
     delay = 0;
   }
@@ -251,10 +243,10 @@ DataCortex.prototype._sendEventsLater = function(delay) {
     this.timeout = setTimeout(() => {
       this.timeout = false;
       this._sendEvents();
-    },delay);
+    }, delay);
   }
 };
-DataCortex.prototype._sendEvents = function() {
+DataCortex.prototype._sendEvents = function () {
   if (this.isReady && !this.isSending && this.eventList.length > 0) {
     this.isSending = true;
 
@@ -262,21 +254,25 @@ DataCortex.prototype._sendEvents = function() {
     this.eventList.some((e) => {
       if (events.length === 0) {
         events.push(e);
-      } else if (_defaultBundleEqual(events[0],e)) {
+      } else if (_defaultBundleEqual(events[0], e)) {
         events.push(e);
       }
       return events.length < EVENT_SEND_COUNT;
     });
-    const default_props = _pick(events[0],DEFAULT_BUNDLE_PROP_LIST);
-    const bundle = Object.assign({},this.defaultBundle,default_props,{
+    const default_props = _pick(events[0], DEFAULT_BUNDLE_PROP_LIST);
+    const bundle = Object.assign({}, this.defaultBundle, default_props, {
       api_key: this.apiKey,
     });
-    bundle.events = events.map(e => _pick(e,EVENT_PROP_LIST));
+    bundle.events = events.map((e) => _pick(e, EVENT_PROP_LIST));
 
-    const current_time = encodeURIComponent((new Date()).toISOString());
-    const url = this.apiBaseUrl
-      + '/' + this.orgName + '/1/track'
-      + "?current_time=" + current_time;
+    const current_time = encodeURIComponent(new Date().toISOString());
+    const url =
+      this.apiBaseUrl +
+      '/' +
+      this.orgName +
+      '/1/track' +
+      '?current_time=' +
+      current_time;
 
     const opts = {
       url: url,
@@ -285,16 +281,16 @@ DataCortex.prototype._sendEvents = function() {
       json: true,
       timeout: REST_TIMEOUT,
     };
-    request(opts,(err,response,body) => {
+    request(opts, (err, response, body) => {
       let remove = true;
       const status = response && response.statusCode;
       if (err) {
         remove = false;
         this.delayCount++;
       } else if (status == 400) {
-        _errorLog("Bad request, please check parameters, error:",body);
+        _errorLog('Bad request, please check parameters, error:', body);
       } else if (status == 403) {
-        _errorLog("Bad API Key, error:",body);
+        _errorLog('Bad API Key, error:', body);
         this.isReady = false;
       } else if (status == 409) {
         // Dup send?
@@ -317,7 +313,7 @@ DataCortex.prototype._sendEvents = function() {
   }
 };
 
-DataCortex.prototype._removeEvents = function(event_list) {
+DataCortex.prototype._removeEvents = function (event_list) {
   this.eventList = this.eventList.filter((e) => {
     return !event_list.some((e2) => {
       return e.event_index == e2.event_index;
@@ -325,15 +321,15 @@ DataCortex.prototype._removeEvents = function(event_list) {
   });
 };
 
-DataCortex.prototype.log = function() {
+DataCortex.prototype.log = function () {
   if (!arguments || arguments.length === 0) {
     throw new Error('log must have arguments');
   }
-  let log_line = "";
+  let log_line = '';
   for (let i = 0; i < arguments.length; i++) {
     const arg = arguments[i];
     if (i > 0) {
-      log_line += " ";
+      log_line += ' ';
     }
 
     if (_isError(arg)) {
@@ -351,22 +347,19 @@ DataCortex.prototype.log = function() {
   this.logEvent({ log_line });
 };
 
-const LOG_NUMBER_PROP_LIST = [
-  'repsonse_bytes',
-  'response_ms',
-];
+const LOG_NUMBER_PROP_LIST = ['repsonse_bytes', 'response_ms'];
 
 const LOG_STRING_PROP_MAP = {
-  'hostname': 64,
-  'filename': 256,
-  'log_level': 64,
-  'device_tag': 62,
-  'user_tag': 62,
-  'remote_address': 64,
-  'log_line': 65535,
+  hostname: 64,
+  filename: 256,
+  log_level: 64,
+  device_tag: 62,
+  user_tag: 62,
+  remote_address: 64,
+  log_line: 65535,
 };
 
-const LOG_OTHER_PROP_LIST = ['event_datetime',];
+const LOG_OTHER_PROP_LIST = ['event_datetime'];
 
 const LOG_PROP_LIST = _union(
   LOG_NUMBER_PROP_LIST,
@@ -374,27 +367,27 @@ const LOG_PROP_LIST = _union(
   LOG_OTHER_PROP_LIST
 );
 
-DataCortex.prototype.logEvent = function(props) {
+DataCortex.prototype.logEvent = function (props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object.');
   }
 
   if (!props.event_datetime) {
-    props.event_datetime = (new Date()).toISOString();
+    props.event_datetime = new Date().toISOString();
   }
 
-  _objectEach(LOG_STRING_PROP_MAP,(max_len,p) => {
+  _objectEach(LOG_STRING_PROP_MAP, (max_len, p) => {
     if (p in props) {
       const val = props[p];
       const s = val && val.toString();
       if (s) {
-        props[p] = s.slice(0,max_len);
+        props[p] = s.slice(0, max_len);
       } else {
         delete props[p];
       }
     }
   });
-  LOG_NUMBER_PROP_LIST.forEach(p => {
+  LOG_NUMBER_PROP_LIST.forEach((p) => {
     if (p in props) {
       let val = props[p];
       if (typeof val !== 'number') {
@@ -408,36 +401,42 @@ DataCortex.prototype.logEvent = function(props) {
     }
   });
 
-  const e = _pick(props,LOG_PROP_LIST);
+  const e = _pick(props, LOG_PROP_LIST);
   this.logList.push(e);
   this._sendLogsLater();
   return e;
 };
 
-DataCortex.prototype._removeLogs = function(events) {
-  this.logList.splice(0,events.length);
+DataCortex.prototype._removeLogs = function (events) {
+  this.logList.splice(0, events.length);
 };
 
 function _isError(e) {
-  return e && e.stack && e.message && typeof e.stack === 'string' && typeof e.message === 'string';
+  return (
+    e &&
+    e.stack &&
+    e.message &&
+    typeof e.stack === 'string' &&
+    typeof e.message === 'string'
+  );
 }
 
-DataCortex.prototype._sendLogsLater = function(delay = 0) {
+DataCortex.prototype._sendLogsLater = function (delay = 0) {
   if (!this.logTimeout && this.isReady && !this.isLogSending) {
     this.logTimeout = setTimeout(() => {
       this.logTimeout = false;
       this._sendLogs();
-    },delay);
+    }, delay);
   }
 };
-DataCortex.prototype._sendLogs = function() {
+DataCortex.prototype._sendLogs = function () {
   if (this.isReady && !this.isLogSending && this.logList.length > 0) {
     this.isLogSending = true;
 
     const bundle = {
       api_key: this.apiKey,
       app_ver: this.serverVer || this.appVer,
-      events: this.logList.slice(0,LOG_SEND_COUNT),
+      events: this.logList.slice(0, LOG_SEND_COUNT),
     };
 
     const url = this.apiBaseUrl + '/' + this.orgName + '/1/app_log';
@@ -449,14 +448,14 @@ DataCortex.prototype._sendLogs = function() {
       json: true,
       timeout: REST_TIMEOUT,
     };
-    request(opts,(err,response,body) => {
+    request(opts, (err, response, body) => {
       const status = response && response.statusCode;
       let remove = true;
       if (err === 'status') {
         if (status === 400) {
-          _errorLog("Bad request, please check parameters, error:",body);
+          _errorLog('Bad request, please check parameters, error:', body);
         } else if (status === 403) {
-          _errorLog("Bad API Key, error:",body);
+          _errorLog('Bad API Key, error:', body);
         } else if (status === 409) {
           // Dup send?
         } else {
@@ -481,19 +480,19 @@ DataCortex.prototype._sendLogs = function() {
   }
 };
 
-function _defaultBundleEqual(a,b) {
-  return DEFAULT_BUNDLE_PROP_LIST.every(prop => a[prop] === b[prop]);
+function _defaultBundleEqual(a, b) {
+  return DEFAULT_BUNDLE_PROP_LIST.every((prop) => a[prop] === b[prop]);
 }
 
 function _errorLog() {
-  const args = ["Data Cortex Error:"];
-  args.push.apply(args,arguments);
-  console.error.apply(console,args);
+  const args = ['Data Cortex Error:'];
+  args.push.apply(args, arguments);
+  console.error.apply(console, args);
 }
 
-function _pick(obj,prop_list) {
+function _pick(obj, prop_list) {
   const new_obj = {};
-  prop_list.forEach(prop => {
+  prop_list.forEach((prop) => {
     const val = obj[prop];
     if (val !== undefined) {
       new_obj[prop] = val;
@@ -501,10 +500,10 @@ function _pick(obj,prop_list) {
   });
   return new_obj;
 }
-function _objectEach(object,callback) {
-  Object.keys(object).forEach(key => {
+function _objectEach(object, callback) {
+  Object.keys(object).forEach((key) => {
     const value = object[key];
-    callback(value,key,object);
+    callback(value, key, object);
   });
 }
 function _union() {
