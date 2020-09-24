@@ -5,6 +5,7 @@ const request = require('request');
 const EVENT_SEND_COUNT = 10;
 const LOG_SEND_COUNT = 100;
 const DELAY_MS = 500;
+const REST_TIMEOUT = 5 * 1000;
 
 const STRING_PROP_LIST = [
   'kingdom',
@@ -282,8 +283,8 @@ DataCortex.prototype._sendEvents = function() {
       method: 'POST',
       body: bundle,
       json: true,
+      timeout: REST_TIMEOUT,
     };
-
     request(opts,(err,response,body) => {
       let remove = true;
       const status = response && response.statusCode;
@@ -446,6 +447,7 @@ DataCortex.prototype._sendLogs = function() {
       method: 'POST',
       body: bundle,
       json: true,
+      timeout: REST_TIMEOUT,
     };
     request(opts,(err,response,body) => {
       const status = response && response.statusCode;
