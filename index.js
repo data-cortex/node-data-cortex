@@ -341,6 +341,7 @@ DataCortex.prototype.log = function () {
     } else if (typeof arg === 'object') {
       try {
         log_line += JSON.stringify(arg);
+      //eslint-disable-next-line no-unused-vars
       } catch (e) {
         log_line += arg;
       }
@@ -442,7 +443,7 @@ DataCortex.prototype._sendLogs = function () {
 
     const bundle = Object.assign({}, this.defaultBundle, {
       api_key: this.apiKey,
-      app_ver: this.serverVer || this.appVer,
+      app_ver: this.appVer,
       events: this.logList.slice(0, LOG_SEND_COUNT),
     });
     const url = this.apiBaseUrl + '/' + this.orgName + '/1/app_log';
