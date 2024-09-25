@@ -79,11 +79,9 @@ function DataCortex() {
 
   return this;
 }
-
 function create() {
   return new DataCortex();
 }
-
 DataCortex.prototype.init = function (opts, done) {
   if (!done) {
     done = function () {};
@@ -113,15 +111,35 @@ DataCortex.prototype.init = function (opts, done) {
   if (opts.serverVer) {
     this.defaultBundle.server_ver = opts.serverVer;
   }
+  if (opts.deviceTag) {
+    this.defaultBundle.device_tag = opts.deviceTag;
+  }
+  if (opts.userTag) {
+    this.defaultBundle.user_tag = opts.userTag;
+  }
 
-  if (!opts.noHupHandler) {
+  if (!opts.noHupHandler && !this.hasHupHandler) {
+    this.hasHupHandler = true;
     process.on('SIGHUP', () => this.flush());
   }
 
   this.isReady = true;
   done();
 };
-
+DataCortex.prototype.setDeviceTag = function (tag) {
+  if (tag) {
+    this.defaultBundle.device_tag = tag;
+  } else {
+    delete this.defaultBundle.device_tag;
+  }
+};
+DataCortex.prototype.setUserTag = function (tag) {
+  if (tag) {
+    this.defaultBundle.user_tag = tag;
+  } else {
+    delete this.defaultBundle.user_tag;
+  }
+};
 DataCortex.prototype.install = function (props) {
   if (!props || typeof props !== 'object') {
     throw new Error('props must be an object');
@@ -170,7 +188,6 @@ DataCortex.prototype.messageClick = function (props) {
   }
   this._internalEventAdd(props, 'message_click');
 };
-
 DataCortex.prototype.economy = function (props) {
   if (!props || typeof props != 'object') {
     throw new Error('props must be an object');
@@ -186,15 +203,13 @@ DataCortex.prototype.economy = function (props) {
   }
   this._internalEventAdd(props, 'economy');
 };
-
 DataCortex.prototype.flush = function () {
   this._sendEvents();
+  this._sendLogs();
 };
-
 DataCortex.prototype.isReady = function () {
   return this.isReady;
 };
-
 DataCortex.prototype._internalEventAdd = function (input_props, type) {
   if (!input_props.device_tag) {
     throw new Error('device_tag is required');
@@ -234,7 +249,6 @@ DataCortex.prototype._internalEventAdd = function (input_props, type) {
   this.eventList.push(_pick(props, BUNDLE_PROP_LIST));
   this._sendEventsLater();
 };
-
 DataCortex.prototype._sendEventsLater = function (delay) {
   if (!delay) {
     delay = 0;
@@ -312,7 +326,6 @@ DataCortex.prototype._sendEvents = function () {
     });
   }
 };
-
 DataCortex.prototype._removeEvents = function (event_list) {
   this.eventList = this.eventList.filter((e) => {
     return !event_list.some((e2) => {
@@ -320,7 +333,6 @@ DataCortex.prototype._removeEvents = function (event_list) {
     });
   });
 };
-
 DataCortex.prototype.log = function () {
   if (!arguments || arguments.length === 0) {
     throw new Error('log must have arguments');
@@ -347,8 +359,7 @@ DataCortex.prototype.log = function () {
   this.logEvent({ log_line });
 };
 
-const LOG_NUMBER_PROP_LIST = ['repsonse_bytes', 'response_ms'];
-
+const LOG_NUMBER_PROP_LIST = ['response_bytes', 'response_ms'];
 const LOG_STRING_PROP_MAP = {
   hostname: 64,
   filename: 256,
@@ -358,9 +369,16 @@ const LOG_STRING_PROP_MAP = {
   remote_address: 64,
   log_line: 65535,
 };
-
-const LOG_OTHER_PROP_LIST = ['event_datetime'];
-
+const LOG_OTHER_PROP_LIST = [
+  'event_datetime',
+  'device_type',
+  'os',
+  'os_ver',
+  'browser',
+  'browser_ver',
+  'country',
+  'language',
+];
 const LOG_PROP_LIST = _union(
   LOG_NUMBER_PROP_LIST,
   Object.keys(LOG_STRING_PROP_MAP),
@@ -406,11 +424,9 @@ DataCortex.prototype.logEvent = function (props) {
   this._sendLogsLater();
   return e;
 };
-
 DataCortex.prototype._removeLogs = function (events) {
   this.logList.splice(0, events.length);
 };
-
 function _isError(e) {
   return (
     e &&
@@ -420,7 +436,6 @@ function _isError(e) {
     typeof e.message === 'string'
   );
 }
-
 DataCortex.prototype._sendLogsLater = function (delay = 0) {
   if (!this.logTimeout && this.isReady && !this.isLogSending) {
     this.logTimeout = setTimeout(() => {
@@ -433,14 +448,12 @@ DataCortex.prototype._sendLogs = function () {
   if (this.isReady && !this.isLogSending && this.logList.length > 0) {
     this.isLogSending = true;
 
-    const bundle = {
+    const bundle = Object.assign({}, this.defaultBundle, {
       api_key: this.apiKey,
       app_ver: this.serverVer || this.appVer,
       events: this.logList.slice(0, LOG_SEND_COUNT),
-    };
-
+    });
     const url = this.apiBaseUrl + '/' + this.orgName + '/1/app_log';
-
     const opts = {
       url: url,
       method: 'POST',
@@ -517,7 +530,10 @@ function _union() {
 
 const g_singleObject = create();
 
+exports.defaultObject = g_singleObject;
 exports.init = DataCortex.prototype.init.bind(g_singleObject);
+exports.setDeviceTag = DataCortex.prototype.setDeviceTag.bind(g_singleObject);
+exports.setUserTag = DataCortex.prototype.setUserTag.bind(g_singleObject);
 exports.flush = DataCortex.prototype.flush.bind(g_singleObject);
 exports.isReady = DataCortex.prototype.isReady.bind(g_singleObject);
 exports.install = DataCortex.prototype.install.bind(g_singleObject);
@@ -527,4 +543,5 @@ exports.economy = DataCortex.prototype.economy.bind(g_singleObject);
 exports.messageSend = DataCortex.prototype.messageSend.bind(g_singleObject);
 exports.messageClick = DataCortex.prototype.messageClick.bind(g_singleObject);
 exports.log = DataCortex.prototype.log.bind(g_singleObject);
+exports.logEvent = DataCortex.prototype.logEvent.bind(g_singleObject);
 exports.create = create;

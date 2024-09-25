@@ -1,13 +1,14 @@
 'use strict';
 
 const dataCortex = require('../index.js');
-const path = require('path');
+const path = require('node:path');
+const os = require('node:os');
 
-console.log("simple example");
+console.log('simple example');
 
 const apiKey = process.argv[2];
 if (!apiKey) {
-  console.log("Usage: " + path.basename(process.argv[1]) + " <api_key>");
+  console.log('Usage: ' + path.basename(process.argv[1]) + ' <api_key>');
   process.exit(-1);
 }
 
@@ -16,13 +17,19 @@ const opts = {
   orgName: 'test',
   appVer: '1.0.1',
   serverVer: '0.0.13',
+  os: os.type(),
+  osVer: os.release(),
 };
 dataCortex.init(opts);
 
 dataCortex.event({ device_tag: '123', kingdom: 'kingdom', species: 'species' });
-dataCortex.event({ device_tag: '123', event_datetime: new Date(), kingdom: 'date' });
+dataCortex.event({
+  device_tag: '123',
+  event_datetime: new Date(),
+  kingdom: 'date',
+});
 dataCortex.event({ device_tag: '123', kingdom: '"quotes""middle""' });
-dataCortex.event({ device_tag: '123', kingdom: "newline", });
+dataCortex.event({ device_tag: '123', kingdom: 'newline' });
 
 dataCortex.economy({
   device_tag: '123',
@@ -59,12 +66,65 @@ dataCortex.messageClick({
   to_tag: '123',
 });
 
-dataCortex.log("This is a log line");
-dataCortex.log("This is a log line with args",1,"foo",new Date(),new Error());
+dataCortex.log('This is a log line');
+dataCortex.log(
+  'This is a log line with args',
+  1,
+  'foo',
+  new Date(),
+  new Error()
+);
+
+dataCortex.logEvent({
+  hostname: os.hostname(),
+  filename: __dirname,
+  log_level: 'crit',
+  device_tag: '123',
+  user_tag: 'user444',
+  remote_address: '1.2.3.4',
+  response_bytes: 22,
+  response_ms: 55.44,
+  device_type: 'mac',
+  os: 'apple_2gs',
+  os_ver: 'v1.23',
+  browser: 'netscape',
+  browser_ver: 'v109.2345',
+  country: 'uk',
+  language: 'en-uk',
+  log_line: 'Log line from log event',
+});
+
+dataCortex.logEvent({
+  hostname: os.hostname(),
+  filename: __dirname,
+  log_level: 'crit',
+  device_tag: '123',
+  user_tag: 'user444',
+  remote_address: '1.2.3.4',
+  response_bytes: 22,
+  response_ms: 55.44,
+  log_line: 'Second event with fewer overrides',
+});
 
 dataCortex.flush();
 
-console.log("flushed, waiting");
+dataCortex.logEvent({
+  log_line: 'before device tag',
+});
+
+dataCortex.flush();
+
+dataCortex.setDeviceTag('device999');
+dataCortex.setUserTag('user987654321');
+
+dataCortex.logEvent({
+  log_line: 'after device tag',
+});
+dataCortex.log('Another thingy');
+
+dataCortex.flush();
+
+console.log('flushed, waiting');
 setTimeout(() => {
-  console.log("done done");
-},1000);
+  console.log('done done');
+}, 1000);
