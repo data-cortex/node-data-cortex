@@ -216,7 +216,7 @@ DataCortex.prototype.isReady = function () {
   return this.isReady;
 };
 DataCortex.prototype._internalEventAdd = function (input_props, type) {
-  if (!input_props.device_tag) {
+  if (!input_props.device_tag && !this.defaultBundle.device_tag) {
     throw new Error('device_tag is required');
   }
 
