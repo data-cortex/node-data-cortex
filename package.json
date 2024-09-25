@@ -15,9 +15,7 @@
     "name": "Jim Lake"
   },
   "license": "MIT",
-  "dependencies": {
-    "request": "2.88.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "eslint": "^8.0.1"
   }

@@ -1,6 +1,9 @@
 'use strict';
 
-const request = require('request');
+const https = require('node:https');
+const package_json = require('./package.json');
+
+const UAS = 'node-data-cortex/' + package_json.version;
 
 const EVENT_SEND_COUNT = 10;
 const LOG_SEND_COUNT = 100;
@@ -288,27 +291,16 @@ DataCortex.prototype._sendEvents = function () {
       '?current_time=' +
       current_time;
 
-    const opts = {
-      url: url,
-      method: 'POST',
-      body: bundle,
-      json: true,
-      timeout: REST_TIMEOUT,
-    };
-    request(opts, (err, response, body) => {
+    _request({ url, body: bundle }, (err, body) => {
       let remove = true;
-      const status = response && response.statusCode;
-      if (err) {
-        remove = false;
-        this.delayCount++;
-      } else if (status == 400) {
+      if (err == 400) {
         _errorLog('Bad request, please check parameters, error:', body);
-      } else if (status == 403) {
+      } else if (err == 403) {
         _errorLog('Bad API Key, error:', body);
         this.isReady = false;
-      } else if (status == 409) {
+      } else if (err == 409) {
         // Dup send?
-      } else if (status != 200) {
+      } else if (err) {
         remove = false;
         this.delayCount++;
       } else {
@@ -454,27 +446,14 @@ DataCortex.prototype._sendLogs = function () {
       events: this.logList.slice(0, LOG_SEND_COUNT),
     });
     const url = this.apiBaseUrl + '/' + this.orgName + '/1/app_log';
-    const opts = {
-      url: url,
-      method: 'POST',
-      body: bundle,
-      json: true,
-      timeout: REST_TIMEOUT,
-    };
-    request(opts, (err, response, body) => {
-      const status = response && response.statusCode;
+    _request({ url, body: bundle }, (err, body) => {
       let remove = true;
-      if (err === 'status') {
-        if (status === 400) {
-          _errorLog('Bad request, please check parameters, error:', body);
-        } else if (status === 403) {
-          _errorLog('Bad API Key, error:', body);
-        } else if (status === 409) {
-          // Dup send?
-        } else {
-          remove = false;
-          this.logDelayCount++;
-        }
+      if (err === 400) {
+        _errorLog('Bad request, please check parameters, error:', body);
+      } else if (err === 403) {
+        _errorLog('Bad API Key, error:', body);
+      } else if (err === 409) {
+        // Dup send?
       } else if (err) {
         remove = false;
         this.logDelayCount++;
@@ -526,6 +505,50 @@ function _union() {
     Array.prototype.push.apply(dest, array);
   }
   return dest;
+}
+
+function _request(params, done) {
+  let is_done = false;
+  const opts = {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent': UAS,
+    },
+    timeout: REST_TIMEOUT,
+  };
+  let post_body = '';
+  try {
+    post_body = JSON.stringify(params.body);
+  } catch (e) {
+    is_done = true;
+    done('bad_body_json', e);
+  }
+
+  let err;
+  let response_body = '';
+  const req = https.request(params.url, opts, (res) => {
+    if (res.statusCode < 200 || res.statusCode > 299) {
+      err = res.statusCode;
+    }
+    res.setEncoding('utf8');
+    res.on('data', (chunk) => {
+      response_body += chunk;
+    });
+    res.on('end', () => {
+      if (!is_done) {
+        done(err, response_body);
+      }
+    });
+  });
+  req.on('error', (e) => {
+    if (!is_done) {
+      is_done = true;
+      done(e, response_body);
+    }
+  });
+  req.write(post_body);
+  req.end();
 }
 
 const g_singleObject = create();
