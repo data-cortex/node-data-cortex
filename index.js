@@ -110,7 +110,6 @@ DataCortex.prototype.init = function (opts, done) {
     os_ver: opts.osVer || '',
     language: opts.language || 'zz',
   };
-
   if (opts.serverVer) {
     this.defaultBundle.server_ver = opts.serverVer;
   }
@@ -119,6 +118,9 @@ DataCortex.prototype.init = function (opts, done) {
   }
   if (opts.userTag) {
     this.defaultBundle.user_tag = opts.userTag;
+  }
+  if (opts.country) {
+    this.defaultBundle.country = opts.country;
   }
 
   if (!opts.noHupHandler && !this.hasHupHandler) {
@@ -341,7 +343,7 @@ DataCortex.prototype.log = function () {
     } else if (typeof arg === 'object') {
       try {
         log_line += JSON.stringify(arg);
-      //eslint-disable-next-line no-unused-vars
+        //eslint-disable-next-line no-unused-vars
       } catch (e) {
         log_line += arg;
       }
