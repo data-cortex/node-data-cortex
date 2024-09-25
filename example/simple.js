@@ -124,7 +124,6 @@ dataCortex.log('Another thingy');
 
 dataCortex.event({ kingdom: 'kingdom', species: 'species' });
 
-
 dataCortex.flush();
 
 console.log('flushed, waiting');
