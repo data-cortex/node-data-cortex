@@ -122,6 +122,13 @@ DataCortex.prototype.init = function (opts, done) {
   if (opts.country) {
     this.defaultBundle.country = opts.country;
   }
+  this.defaultLogBundle = {};
+  if (opts.hostname) {
+    this.defaultLogBundle.hostname = opts.hostname;
+  }
+  if (opts.filename) {
+    this.defaultLogBundle.filename = opts.filename;
+  }
 
   if (!opts.noHupHandler && !this.hasHupHandler) {
     this.hasHupHandler = true;
@@ -443,11 +450,16 @@ DataCortex.prototype._sendLogs = function () {
   if (this.isReady && !this.isLogSending && this.logList.length > 0) {
     this.isLogSending = true;
 
-    const bundle = Object.assign({}, this.defaultBundle, {
-      api_key: this.apiKey,
-      app_ver: this.appVer,
-      events: this.logList.slice(0, LOG_SEND_COUNT),
-    });
+    const bundle = Object.assign(
+      {},
+      this.defaultBundle,
+      this.defaultLogBundle,
+      {
+        api_key: this.apiKey,
+        app_ver: this.appVer,
+        events: this.logList.slice(0, LOG_SEND_COUNT),
+      }
+    );
     const url = this.apiBaseUrl + '/' + this.orgName + '/1/app_log';
     _request({ url, body: bundle }, (err, body) => {
       let remove = true;

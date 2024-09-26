@@ -17,6 +17,8 @@ const opts = {
   orgName: 'test',
   appVer: '1.0.1',
   serverVer: '0.0.13',
+  filename: 'file_test.js',
+  hostname: 'test-host.local',
   os: os.type(),
   osVer: os.release(),
 };
