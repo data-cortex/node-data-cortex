@@ -1,7 +1,8 @@
 'use strict';
 
 const https = require('node:https');
-const package_json = require('./package.json');
+const os = require('node:os');
+const package_json = require('../package.json');
 
 const UAS = 'node-data-cortex/' + package_json.version;
 
@@ -125,6 +126,8 @@ DataCortex.prototype.init = function (opts, done) {
   this.defaultLogBundle = {};
   if (opts.hostname) {
     this.defaultLogBundle.hostname = opts.hostname;
+  } else {
+    this.defaultLogBundle.hostname = os.hostname();
   }
   if (opts.filename) {
     this.defaultLogBundle.filename = opts.filename;
@@ -565,21 +568,5 @@ function _request(params, done) {
   req.write(post_body);
   req.end();
 }
-
-const g_singleObject = create();
-
-exports.defaultObject = g_singleObject;
-exports.init = DataCortex.prototype.init.bind(g_singleObject);
-exports.setDeviceTag = DataCortex.prototype.setDeviceTag.bind(g_singleObject);
-exports.setUserTag = DataCortex.prototype.setUserTag.bind(g_singleObject);
-exports.flush = DataCortex.prototype.flush.bind(g_singleObject);
-exports.isReady = DataCortex.prototype.isReady.bind(g_singleObject);
-exports.install = DataCortex.prototype.install.bind(g_singleObject);
-exports.dau = DataCortex.prototype.dau.bind(g_singleObject);
-exports.event = DataCortex.prototype.event.bind(g_singleObject);
-exports.economy = DataCortex.prototype.economy.bind(g_singleObject);
-exports.messageSend = DataCortex.prototype.messageSend.bind(g_singleObject);
-exports.messageClick = DataCortex.prototype.messageClick.bind(g_singleObject);
-exports.log = DataCortex.prototype.log.bind(g_singleObject);
-exports.logEvent = DataCortex.prototype.logEvent.bind(g_singleObject);
+exports.DataCortex = DataCortex;
 exports.create = create;

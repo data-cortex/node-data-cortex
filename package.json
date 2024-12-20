@@ -1,11 +1,14 @@
 {
   "name": "node-data-cortex",
-  "version": "0.0.22",
+  "version": "0.0.23",
   "description": "Write data cortex events to bulk api endpoint",
-  "main": "index.js",
+  "main": "src/index.js",
+  "files": [
+    "src/*"
+  ],
   "scripts": {
-    "lint": "eslint index.js",
-    "pretty": "prettier --write '**/*.js'"
+    "lint": "eslint src",
+    "pretty": "prettier --write '**/*.js' '**/*.json'"
   },
   "repository": {
     "type": "git",
@@ -13,6 +16,9 @@
   },
   "author": {
     "name": "Jim Lake"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   },
   "license": "MIT",
   "dependencies": {},

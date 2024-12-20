@@ -1,6 +1,6 @@
 'use strict';
 
-const dataCortex = require('../index.js');
+const dataCortex = require('../src/index.js');
 const path = require('node:path');
 const os = require('node:os');
 
