@@ -43,15 +43,28 @@ app.all('/after', function (req, res) {
   res.send('after logging');
 });
 app.all('/device', function (req, res) {
-  req.device_tag = req.query.device_tag ?? req.body.device_tag;
+  req.device_tag = req.query?.device_tag ?? req.body?.device_tag;
   res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.send({ query: req.query, device: req.device_tag ?? null });
 });
 app.all('/user', function (req, res) {
-  req.user_tag = req.query.user_tag ?? req.body.user_tag;
+  req.user_tag = req.query?.user_tag ?? req.body?.user_tag;
   res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.send({ query: req.query, user: req.user_tag ?? null });
 });
+
+const router = new express.Router();
+const router2 = new express.Router();
+router.all('/another', function (req, res) {
+  res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.send('another');
+});
+router2.all('/another2', function (req, res) {
+  res.header('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.send('another2');
+});
+router.use('/sub2', router2);
+app.use('/sub', router);
 
 const http_server = http.createServer(app);
 http_server.listen(app.get('port'), () => {

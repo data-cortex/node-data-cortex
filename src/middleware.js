@@ -17,7 +17,7 @@ function createLogger(params) {
         response_bytes,
         remote_address: req.ip,
         log_level: String(res.statusCode),
-        log_line: `${req.method} ${req.url} HTTP/${req.httpVersionMajor}.${req.httpVersionMinor}`,
+        log_line: `${req.method} ${req.originalUrl} HTTP/${req.httpVersionMajor}.${req.httpVersionMinor}`,
       };
       const referrer = req.get('referrer');
       if (referrer) {
