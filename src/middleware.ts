@@ -1,12 +1,11 @@
 import { DataCortex } from './data_cortex';
 
-interface CreateLoggerParams {
+export interface CreateLoggerParams {
   dataCortex: DataCortex;
   prepareEvent?: (req: any, res: any, event: any) => void;
   logConsole?: boolean;
 }
-
-function createLogger(params: CreateLoggerParams) {
+export function createLogger(params: CreateLoggerParams) {
   const { dataCortex, prepareEvent, logConsole } = params;
   return function (req: any, res: any, next: any) {
     req._startTimestamp = Date.now();
@@ -141,4 +140,4 @@ function _regexGet(haystack: string, regex: RegExp, def: string) {
   return ret;
 }
 
-export { createLogger };
+export default { createLogger };

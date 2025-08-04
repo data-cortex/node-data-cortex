@@ -1,30 +1,26 @@
 import { DataCortex, create } from './data_cortex';
 import { createLogger } from './middleware';
 
-const g_singleObject = create();
+export const defaultObject = create();
+export const init = DataCortex.prototype.init.bind(defaultObject);
+export const setDeviceTag = DataCortex.prototype.setDeviceTag.bind(defaultObject);
+export const setUserTag = DataCortex.prototype.setUserTag.bind(defaultObject);
+export const flush = DataCortex.prototype.flush.bind(defaultObject);
+export const install = DataCortex.prototype.install.bind(defaultObject);
+export const dau = DataCortex.prototype.dau.bind(defaultObject);
+export const event = DataCortex.prototype.event.bind(defaultObject);
+export const economy = DataCortex.prototype.economy.bind(defaultObject);
+export const messageSend = DataCortex.prototype.messageSend.bind(defaultObject);
+export const messageClick = DataCortex.prototype.messageClick.bind(defaultObject);
+export const log = DataCortex.prototype.log.bind(defaultObject);
+export const logEvent = DataCortex.prototype.logEvent.bind(defaultObject);
 
-const defaultObject = g_singleObject;
-const init = DataCortex.prototype.init.bind(g_singleObject);
-const setDeviceTag = DataCortex.prototype.setDeviceTag.bind(g_singleObject);
-const setUserTag = DataCortex.prototype.setUserTag.bind(g_singleObject);
-const flush = DataCortex.prototype.flush.bind(g_singleObject);
-const isReady = g_singleObject.isReady;
-const install = DataCortex.prototype.install.bind(g_singleObject);
-const dau = DataCortex.prototype.dau.bind(g_singleObject);
-const event = DataCortex.prototype.event.bind(g_singleObject);
-const economy = DataCortex.prototype.economy.bind(g_singleObject);
-const messageSend = DataCortex.prototype.messageSend.bind(g_singleObject);
-const messageClick = DataCortex.prototype.messageClick.bind(g_singleObject);
-const log = DataCortex.prototype.log.bind(g_singleObject);
-const logEvent = DataCortex.prototype.logEvent.bind(g_singleObject);
-
-export {
+export default {
   defaultObject,
   init,
   setDeviceTag,
   setUserTag,
   flush,
-  isReady,
   install,
   dau,
   event,

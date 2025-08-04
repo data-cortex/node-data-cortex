@@ -1,8 +1,5 @@
-'use strict';
-
 import * as https from 'node:https';
 import * as os from 'node:os';
-import * as package_json from '../package.json';
 import {
   STRING_PROP_LIST,
   NUMBER_PROP_LIST,
@@ -16,7 +13,8 @@ import {
   LOG_PROP_LIST,
 } from './constants';
 
-const UAS = 'node-data-cortex/' + package_json.version;
+const { version } = require('../package.json');
+const UAS = `node-data-cortex/${version}`;
 
 const EVENT_SEND_COUNT = 10;
 const LOG_SEND_COUNT = 100;
@@ -25,7 +23,7 @@ const REST_TIMEOUT = 5 * 1000;
 
 const API_BASE_URL = 'https://api.data-cortex.com';
 
-class DataCortex {
+export class DataCortex {
   apiBaseUrl: string;
   isReady: boolean;
   isSending: boolean;
@@ -349,8 +347,7 @@ class DataCortex {
       } else if (typeof arg === 'object') {
         try {
           log_line += JSON.stringify(arg);
-          //eslint-disable-next-line no-unused-vars
-        } catch (e) {
+        } catch (_e) {
           log_line += arg;
         }
       } else {
@@ -466,17 +463,14 @@ function _isError(e: any) {
     typeof e.message === 'string'
   );
 }
-
 function _defaultBundleEqual(a: any, b: any) {
   return DEFAULT_BUNDLE_PROP_LIST.every((prop) => a[prop] === b[prop]);
 }
-
 function _errorLog(...args: any[]) {
   const new_args = ['Data Cortex Error:'];
   new_args.push.apply(new_args, args);
   console.error.apply(console, new_args);
 }
-
 function _pick(obj: any, prop_list: string[]) {
   const new_obj: any = {};
   prop_list.forEach((prop) => {
@@ -493,8 +487,6 @@ function _objectEach(object: any, callback: (value: any, key: string, object: an
     callback(value, key, object);
   });
 }
-
-
 function _request(params: any, done: (err: any, body?: any) => void) {
   let is_done = false;
   const opts: https.RequestOptions = {
@@ -538,9 +530,7 @@ function _request(params: any, done: (err: any, body?: any) => void) {
   req.write(post_body);
   req.end();
 }
-
-function create() {
+export function create() {
   return new DataCortex();
 }
-
-export { DataCortex, create };
+export default { DataCortex, create };

@@ -1,7 +1,29 @@
-import * as https from 'node:https';
-import * as os from 'node:os';
+'use strict';
 
-var version = "0.0.24";
+Object.defineProperty(exports, '__esModule', { value: true });
+
+var https = require('node:https');
+var os = require('node:os');
+
+function _interopNamespaceDefault(e) {
+    var n = Object.create(null);
+    if (e) {
+        Object.keys(e).forEach(function (k) {
+            if (k !== 'default') {
+                var d = Object.getOwnPropertyDescriptor(e, k);
+                Object.defineProperty(n, k, d.get ? d : {
+                    enumerable: true,
+                    get: function () { return e[k]; }
+                });
+            }
+        });
+    }
+    n.default = e;
+    return Object.freeze(n);
+}
+
+var https__namespace = /*#__PURE__*/_interopNamespaceDefault(https);
+var os__namespace = /*#__PURE__*/_interopNamespaceDefault(os);
 
 const STRING_PROP_LIST = [
     'kingdom',
@@ -67,7 +89,8 @@ const LOG_OTHER_PROP_LIST = [
 ];
 const LOG_PROP_LIST = LOG_NUMBER_PROP_LIST.concat(Object.keys(LOG_STRING_PROP_MAP), LOG_OTHER_PROP_LIST);
 
-const UAS = 'node-data-cortex/' + version;
+const { version } = require('../package.json');
+const UAS = `node-data-cortex/${version}`;
 const EVENT_SEND_COUNT = 10;
 const LOG_SEND_COUNT = 100;
 const DELAY_MS = 500;
@@ -152,7 +175,7 @@ class DataCortex {
             this.defaultLogBundle.hostname = opts.hostname;
         }
         else {
-            this.defaultLogBundle.hostname = os.hostname();
+            this.defaultLogBundle.hostname = os__namespace.hostname();
         }
         if (opts.filename) {
             this.defaultLogBundle.filename = opts.filename;
@@ -520,7 +543,7 @@ function _request(params, done) {
     }
     let err = null;
     let response_body = '';
-    const req = https.request(params.url, opts, (res) => {
+    const req = https__namespace.request(params.url, opts, (res) => {
         if (res.statusCode && (res.statusCode < 200 || res.statusCode > 299)) {
             err = res.statusCode;
         }
@@ -697,20 +720,48 @@ function _regexGet(haystack, regex, def) {
     return ret;
 }
 
-const g_singleObject = create();
-const defaultObject = g_singleObject;
-const init = DataCortex.prototype.init.bind(g_singleObject);
-const setDeviceTag = DataCortex.prototype.setDeviceTag.bind(g_singleObject);
-const setUserTag = DataCortex.prototype.setUserTag.bind(g_singleObject);
-const flush = DataCortex.prototype.flush.bind(g_singleObject);
-const isReady = g_singleObject.isReady;
-const install = DataCortex.prototype.install.bind(g_singleObject);
-const dau = DataCortex.prototype.dau.bind(g_singleObject);
-const event = DataCortex.prototype.event.bind(g_singleObject);
-const economy = DataCortex.prototype.economy.bind(g_singleObject);
-const messageSend = DataCortex.prototype.messageSend.bind(g_singleObject);
-const messageClick = DataCortex.prototype.messageClick.bind(g_singleObject);
-const log = DataCortex.prototype.log.bind(g_singleObject);
-const logEvent = DataCortex.prototype.logEvent.bind(g_singleObject);
+const defaultObject = create();
+const init = DataCortex.prototype.init.bind(defaultObject);
+const setDeviceTag = DataCortex.prototype.setDeviceTag.bind(defaultObject);
+const setUserTag = DataCortex.prototype.setUserTag.bind(defaultObject);
+const flush = DataCortex.prototype.flush.bind(defaultObject);
+const install = DataCortex.prototype.install.bind(defaultObject);
+const dau = DataCortex.prototype.dau.bind(defaultObject);
+const event = DataCortex.prototype.event.bind(defaultObject);
+const economy = DataCortex.prototype.economy.bind(defaultObject);
+const messageSend = DataCortex.prototype.messageSend.bind(defaultObject);
+const messageClick = DataCortex.prototype.messageClick.bind(defaultObject);
+const log = DataCortex.prototype.log.bind(defaultObject);
+const logEvent = DataCortex.prototype.logEvent.bind(defaultObject);
+var index = {
+    defaultObject,
+    init,
+    setDeviceTag,
+    setUserTag,
+    flush,
+    install,
+    dau,
+    event,
+    economy,
+    messageSend,
+    messageClick,
+    log,
+    logEvent,
+    create,
+    createLogger,
+};
 
-export { create, createLogger, dau, defaultObject, economy, event, flush, init, install, isReady, log, logEvent, messageClick, messageSend, setDeviceTag, setUserTag };
+exports.dau = dau;
+exports.default = index;
+exports.defaultObject = defaultObject;
+exports.economy = economy;
+exports.event = event;
+exports.flush = flush;
+exports.init = init;
+exports.install = install;
+exports.log = log;
+exports.logEvent = logEvent;
+exports.messageClick = messageClick;
+exports.messageSend = messageSend;
+exports.setDeviceTag = setDeviceTag;
+exports.setUserTag = setUserTag;

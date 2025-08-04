@@ -2,16 +2,14 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "lib": ["es6"],
-    "declaration": true,
+    "lib": ["es2020"],
+    "declaration": false,
     "outDir": "./dist",
     "strict": true,
-    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
+    "esModuleInterop": true,
     "moduleResolution": "node"
   },
-  "include": [
-    "src/**/*.ts"
-  ]
+  "include": ["src/**/*.ts"]
 }

@@ -9,17 +9,16 @@ export default [
     input: 'src/index.ts',
     output: {
       file: 'dist/index.js',
-      format: 'es',
+      format: 'cjs',
+      exports: 'named',
     },
     plugins: [
-      typescript({ tsconfig: './tsconfig.json' }),
-      resolve(),
-      commonjs(),
       json(),
+      resolve(),
+      typescript({ tsconfig: './tsconfig.json' }),
+      commonjs(),
     ],
-    external: [
-      /node_modules/,
-    ],
+    external: (id) => id.startsWith('node:'),
     treeshake: 'smallest',
   },
   {
@@ -28,4 +27,3 @@ export default [
     plugins: [dts()],
   },
 ];
-
