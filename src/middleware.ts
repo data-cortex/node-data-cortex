@@ -1,17 +1,23 @@
-exports.createLogger = createLogger;
+import { DataCortex } from './data_cortex';
 
-function createLogger(params) {
+interface CreateLoggerParams {
+  dataCortex: DataCortex;
+  prepareEvent?: (req: any, res: any, event: any) => void;
+  logConsole?: boolean;
+}
+
+function createLogger(params: CreateLoggerParams) {
   const { dataCortex, prepareEvent, logConsole } = params;
-  return function (req, res, next) {
+  return function (req: any, res: any, next: any) {
     req._startTimestamp = Date.now();
     const end = res.end;
-    res.end = function (chunk, encoding) {
+    res.end = function (chunk: any, encoding: any) {
       const response_ms = Date.now() - req._startTimestamp;
       const response_bytes = res.getHeader('content-length') || 0;
 
       res.end = end;
       const result = res.end(chunk, encoding);
-      const event = {
+      const event: any = {
         event_datetime: new Date(),
         response_ms,
         response_bytes,
@@ -39,7 +45,7 @@ function createLogger(params) {
     return next();
   };
 }
-function _fillUserAgent(event, ua) {
+function _fillUserAgent(event: any, ua: string) {
   if (ua) {
     if (!event.os) {
       if (ua.indexOf('Win') !== -1) {
@@ -126,7 +132,7 @@ function _fillUserAgent(event, ua) {
     }
   }
 }
-function _regexGet(haystack, regex, def) {
+function _regexGet(haystack: string, regex: RegExp, def: string) {
   let ret = def;
   const matches = haystack.match(regex);
   if (matches && matches.length > 1) {
@@ -134,3 +140,5 @@ function _regexGet(haystack, regex, def) {
   }
   return ret;
 }
+
+export { createLogger };

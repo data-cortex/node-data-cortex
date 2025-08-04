@@ -1,0 +1,10 @@
+export declare const STRING_PROP_LIST: string[];
+export declare const NUMBER_PROP_LIST: string[];
+export declare const OTHER_PROP_LIST: string[];
+export declare const DEFAULT_BUNDLE_PROP_LIST: string[];
+export declare const EVENT_PROP_LIST: string[];
+export declare const BUNDLE_PROP_LIST: string[];
+export declare const LOG_NUMBER_PROP_LIST: string[];
+export declare const LOG_STRING_PROP_MAP: any;
+export declare const LOG_OTHER_PROP_LIST: string[];
+export declare const LOG_PROP_LIST: string[];

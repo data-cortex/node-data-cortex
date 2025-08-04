@@ -1,0 +1,17 @@
+import { DataCortex, create } from './data_cortex';
+import { createLogger } from './middleware';
+declare const defaultObject: DataCortex;
+declare const init: (opts: any, done: () => void) => void;
+declare const setDeviceTag: (tag: string) => void;
+declare const setUserTag: (tag: string) => void;
+declare const flush: () => void;
+declare const isReady: boolean;
+declare const install: (props: any) => void;
+declare const dau: (props: any) => void;
+declare const event: (props: any) => void;
+declare const economy: (props: any) => void;
+declare const messageSend: (props: any) => void;
+declare const messageClick: (props: any) => void;
+declare const log: (...args: any[]) => void;
+declare const logEvent: (props: any) => any;
+export { defaultObject, init, setDeviceTag, setUserTag, flush, isReady, install, dau, event, economy, messageSend, messageClick, log, logEvent, create, createLogger, };
