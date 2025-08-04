@@ -1,7 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { DataCortex, create } from '../src/data_cortex';
-import { createLogger } from '../src/middleware';
+import { DataCortex, create, createLogger } from '../dist';
 
 const API_KEY = process.env.DC_API_KEY;
 const ORG_NAME = 'test_org';
