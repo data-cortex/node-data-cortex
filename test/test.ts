@@ -19,3 +19,10 @@ test('dataCortex.init requires orgName', (t) => {
     dataCortex.init({ apiKey: 'test' });
   }, /opts.orgName is required/);
 });
+
+// Import all other test files to run them
+import './data_cortex.test.js';
+import './middleware.test.js';
+import './constants.test.js';
+import './index.test.js';
+import './additional-coverage.test.js';

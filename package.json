@@ -12,7 +12,11 @@
     "pretty": "prettier --write '**/*.js' '**/*.json'",
     "ts-check": "tsc --noEmit",
     "build": "npm run ts-check && rollup -c",
-    "test": "npm run build && tsx --test test/test.ts"
+    "test": "npm run build && tsx --test test/test.ts",
+    "test:all": "npm run build && tsx test/run-all-tests.ts",
+    "test:unit": "npm run build && tsx --test test/data_cortex.test.ts test/middleware.test.ts test/constants.test.ts test/index.test.ts",
+    "test:integration": "npm run build && tsx --test test/integration.test.ts",
+    "test:coverage": "npm run build && tsx --test --experimental-test-coverage test/test.ts"
   },
   "repository": {
     "type": "git",
