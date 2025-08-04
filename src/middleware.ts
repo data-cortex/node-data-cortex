@@ -1,81 +1,51 @@
 import { DataCortex, LogEventProps } from './data_cortex';
+import type { Request, Response, NextFunction } from 'express';
+import onFinished from 'on-finished';
+
+export default { createLogger };
 
 export interface CreateLoggerParams {
   dataCortex: DataCortex;
-  prepareEvent?: (req: ExpressRequest, res: ExpressResponse, event: LogEvent) => void;
+  prepareEvent?: (req: unknown, res: unknown, event: LogEventProps) => void;
   logConsole?: boolean;
 }
-
-export interface ExpressRequest {
-  _startTimestamp?: number;
-  ip: string;
-  method: string;
-  originalUrl: string;
-  httpVersionMajor: number;
-  httpVersionMinor: number;
-  get(header: string): string | undefined;
-}
-
-export interface ExpressResponse {
-  end: (chunk?: unknown, encoding?: BufferEncoding) => ExpressResponse;
-  getHeader(name: string): string | number | string[] | undefined;
-  statusCode: number;
-}
-
-export interface ExpressNext {
-  (): void;
-}
-
-export interface LogEvent extends LogEventProps {
-  event_datetime: Date;
-  response_ms: number;
-  response_bytes: number;
-  remote_address: string;
-  log_level: string;
-  log_line: string;
-}
-
-export function createLogger(params: CreateLoggerParams) {
+type CreateLoggerResult = (req: unknown, res: unknown, next: () => void) => void;
+export function createLogger(params: CreateLoggerParams): CreateLoggerResult {
   const { dataCortex, prepareEvent, logConsole } = params;
-  return function (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) {
-    req._startTimestamp = Date.now();
-    const end = res.end;
-    res.end = function (chunk?: unknown, encoding?: BufferEncoding) {
-      const response_ms = Date.now() - (req._startTimestamp || 0);
+  return function (req: Request, res: Response, next: NextFunction) {
+    const start_time = Date.now();
+    onFinished(res, function (err, res) {
+      const response_ms = Date.now() - start_time;
       const response_bytes = res.getHeader('content-length') || 0;
-
-      res.end = end;
-      const result = res.end(chunk, encoding);
-      const event: LogEvent = {
-        event_datetime: new Date(),
+      const event_datetime = new Date();
+      const event: LogEventProps = {
+        event_datetime,
         response_ms,
         response_bytes: typeof response_bytes === 'number' ? response_bytes : 0,
-        remote_address: req.ip,
         log_level: String(res.statusCode),
         log_line: `${req.method} ${req.originalUrl} HTTP/${req.httpVersionMajor}.${req.httpVersionMinor}`,
       };
+      if (req.ip) {
+        event.remote_address = req.ip;
+      }
       const referrer = req.get('referrer');
       if (referrer) {
         event.filename = referrer;
       }
       const ua = req.get('user-agent');
       _fillUserAgent(event, ua);
-      if (prepareEvent) {
-        prepareEvent(req, res, event);
-      }
+      prepareEvent?.(req, res, event);
       dataCortex.logEvent(event);
       if (logConsole) {
         console.log(
-          `${event.remote_address} - - [${event.event_datetime.toUTCString()}] "${event.log_line}" ${event.log_level} ${event.response_ms}(ms) "${event.filename ?? ''}" "${ua ?? ''}"`
+          `${event.remote_address} - - [${event_datetime.toUTCString()}] "${event.log_line}" ${event.log_level} ${event.response_ms}(ms) "${event.filename ?? ''}" "${ua ?? ''}"`
         );
       }
-      return result;
-    };
-    return next();
-  };
+    });
+    next();
+  } as CreateLoggerResult;
 }
-
-function _fillUserAgent(event: LogEvent, ua: string | undefined): void {
+function _fillUserAgent(event: LogEventProps, ua: string | undefined): void {
   if (ua) {
     if (!event.os) {
       if (ua.indexOf('Win') !== -1) {
@@ -162,7 +132,6 @@ function _fillUserAgent(event: LogEvent, ua: string | undefined): void {
     }
   }
 }
-
 function _regexGet(haystack: string, regex: RegExp, def: string): string {
   let ret = def;
   const matches = haystack.match(regex);
@@ -171,5 +140,3 @@ function _regexGet(haystack: string, regex: RegExp, def: string): string {
   }
   return ret;
 }
-
-export default { createLogger };

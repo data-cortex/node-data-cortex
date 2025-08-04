@@ -39,27 +39,17 @@ type DauProps = BaseEventProps;
 interface MessageSendProps extends BaseEventProps {
     network: string;
     from_tag: string;
-    to_list: unknown;
-    spend_currency?: string;
-    spend_type?: string;
-    to_tag?: string;
+    to_list: string[];
 }
 interface MessageClickProps extends BaseEventProps {
     network: string;
     from_tag: string;
     to_tag: string;
-    spend_currency?: string;
-    spend_type?: string;
-    to_list?: unknown;
 }
 interface EconomyProps extends BaseEventProps {
     spend_currency: string;
     spend_amount: number;
     spend_type?: string;
-    network?: string;
-    from_tag?: string;
-    to_tag?: string;
-    to_list?: unknown;
 }
 interface LogEventProps {
     event_datetime?: string | Date;
@@ -81,63 +71,26 @@ interface LogEventProps {
     language?: string;
     [key: string]: unknown;
 }
-interface InternalEventProps extends BaseEventProps {
-    spend_currency?: string;
-    spend_type?: string;
-    network?: string;
-    from_tag?: string;
-    to_tag?: string;
-    to_list?: unknown;
-    spend_amount?: number;
-    type?: string;
-    event_index?: number;
-    [key: string]: unknown;
-}
-interface Bundle {
-    api_key: string | false;
-    app_ver?: string;
-    server_ver?: string;
-    config_ver?: string;
-    user_tag?: string;
-    device_tag?: string;
-    device_type?: string;
-    os?: string;
-    os_ver?: string;
-    browser?: string;
-    browser_ver?: string;
-    marketplace?: string;
-    country?: string;
-    geo_ip_address?: string;
-    language?: string;
-    group_tag?: string;
-    events?: InternalEventProps[];
-    [key: string]: unknown;
-}
-interface LogBundle extends Bundle {
-    hostname?: string;
-    filename?: string;
-    events?: LogEventProps[];
-}
 declare class DataCortex {
-    apiBaseUrl: string;
-    isReady: boolean;
-    isSending: boolean;
-    timeout: NodeJS.Timeout | false;
-    apiKey: string | false;
-    orgName: string | false;
-    appVer: string;
-    serverVer: string;
-    userTag: boolean;
-    eventList: InternalEventProps[];
-    nextIndex: number;
-    delayCount: number;
-    defaultBundle: Partial<Bundle>;
-    logList: LogEventProps[];
-    logTimeout: NodeJS.Timeout | false;
-    isLogSending: boolean;
-    logDelayCount: number;
-    defaultLogBundle: Partial<LogBundle>;
-    hasHupHandler: boolean;
+    private apiBaseUrl;
+    private isReady;
+    private isSending;
+    private timeout;
+    private apiKey;
+    private orgName;
+    private appVer;
+    private serverVer;
+    private userTag;
+    private eventList;
+    private nextIndex;
+    private delayCount;
+    private defaultBundle;
+    private logList;
+    private logTimeout;
+    private isLogSending;
+    private logDelayCount;
+    private defaultLogBundle;
+    private hasHupHandler;
     constructor();
     init(opts: InitOptions, done?: () => void): void;
     setDeviceTag(tag: string): void;
@@ -149,49 +102,25 @@ declare class DataCortex {
     messageClick(props: MessageClickProps): void;
     economy(props: EconomyProps): void;
     flush(): void;
-    _internalEventAdd(input_props: InternalEventProps, type: string): void;
-    _sendEventsLater(delay?: number): void;
-    _sendEvents(): void;
-    _removeEvents(event_list: InternalEventProps[]): void;
-    log(...args: unknown[]): LogEventProps;
-    logEvent(props: LogEventProps): LogEventProps;
-    _removeLogs(events: LogEventProps[]): void;
-    _sendLogsLater(delay?: number): void;
-    _sendLogs(): void;
+    private _internalEventAdd;
+    private _sendEventsLater;
+    private _sendEvents;
+    private _removeEvents;
+    log(...args: unknown[]): void;
+    logEvent(props: LogEventProps): void;
+    private _removeLogs;
+    private _sendLogsLater;
+    private _sendLogs;
 }
 declare function create(): DataCortex;
 
 interface CreateLoggerParams {
     dataCortex: DataCortex;
-    prepareEvent?: (req: ExpressRequest, res: ExpressResponse, event: LogEvent) => void;
+    prepareEvent?: (req: unknown, res: unknown, event: LogEventProps) => void;
     logConsole?: boolean;
 }
-interface ExpressRequest {
-    _startTimestamp?: number;
-    ip: string;
-    method: string;
-    originalUrl: string;
-    httpVersionMajor: number;
-    httpVersionMinor: number;
-    get(header: string): string | undefined;
-}
-interface ExpressResponse {
-    end: (chunk?: unknown, encoding?: BufferEncoding) => ExpressResponse;
-    getHeader(name: string): string | number | string[] | undefined;
-    statusCode: number;
-}
-interface ExpressNext {
-    (): void;
-}
-interface LogEvent extends LogEventProps {
-    event_datetime: Date;
-    response_ms: number;
-    response_bytes: number;
-    remote_address: string;
-    log_level: string;
-    log_line: string;
-}
-declare function createLogger(params: CreateLoggerParams): (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) => void;
+type CreateLoggerResult = (req: unknown, res: unknown, next: () => void) => void;
+declare function createLogger(params: CreateLoggerParams): CreateLoggerResult;
 
 declare const defaultObject: DataCortex;
 declare const init: (opts: InitOptions, done?: () => void) => void;
@@ -204,8 +133,8 @@ declare const event: (props: EventProps) => void;
 declare const economy: (props: EconomyProps) => void;
 declare const messageSend: (props: MessageSendProps) => void;
 declare const messageClick: (props: MessageClickProps) => void;
-declare const log: (...args: unknown[]) => LogEventProps;
-declare const logEvent: (props: LogEventProps) => LogEventProps;
+declare const log: (...args: unknown[]) => void;
+declare const logEvent: (props: LogEventProps) => void;
 declare const _default: {
     defaultObject: DataCortex;
     init: (opts: InitOptions, done?: () => void) => void;
@@ -218,11 +147,11 @@ declare const _default: {
     economy: (props: EconomyProps) => void;
     messageSend: (props: MessageSendProps) => void;
     messageClick: (props: MessageClickProps) => void;
-    log: (...args: unknown[]) => LogEventProps;
-    logEvent: (props: LogEventProps) => LogEventProps;
+    log: (...args: unknown[]) => void;
+    logEvent: (props: LogEventProps) => void;
     create: typeof create;
     createLogger: typeof createLogger;
 };
 
 export { DataCortex, create, createLogger, dau, _default as default, defaultObject, economy, event, flush, init, install, log, logEvent, messageClick, messageSend, setDeviceTag, setUserTag };
-export type { BaseEventProps, CreateLoggerParams, DauProps, EconomyProps, EventProps, ExpressNext, ExpressRequest, ExpressResponse, InitOptions, InstallProps, LogEvent, LogEventProps, MessageClickProps, MessageSendProps };
+export type { BaseEventProps, CreateLoggerParams, DauProps, EconomyProps, EventProps, InitOptions, InstallProps, LogEventProps, MessageClickProps, MessageSendProps };

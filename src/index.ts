@@ -16,10 +16,6 @@ export type {
 
 export type {
   CreateLoggerParams,
-  ExpressRequest,
-  ExpressResponse,
-  ExpressNext,
-  LogEvent,
 } from './middleware';
 
 // Export the DataCortex class and create function

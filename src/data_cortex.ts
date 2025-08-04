@@ -74,19 +74,13 @@ export type DauProps = BaseEventProps;
 export interface MessageSendProps extends BaseEventProps {
   network: string;
   from_tag: string;
-  to_list: unknown;
-  spend_currency?: string;
-  spend_type?: string;
-  to_tag?: string;
+  to_list: string[];
 }
 
 export interface MessageClickProps extends BaseEventProps {
   network: string;
   from_tag: string;
   to_tag: string;
-  spend_currency?: string;
-  spend_type?: string;
-  to_list?: unknown;
 }
 
 // Specific props for economy events
@@ -94,10 +88,6 @@ export interface EconomyProps extends BaseEventProps {
   spend_currency: string;
   spend_amount: number;
   spend_type?: string;
-  network?: string;
-  from_tag?: string;
-  to_tag?: string;
-  to_list?: unknown;
 }
 
 // Log event properties
@@ -173,25 +163,25 @@ interface RequestCallback {
 }
 
 export class DataCortex {
-  apiBaseUrl: string;
-  isReady: boolean;
-  isSending: boolean;
-  timeout: NodeJS.Timeout | false;
-  apiKey: string | false;
-  orgName: string | false;
-  appVer: string;
-  serverVer: string;
-  userTag: boolean;
-  eventList: InternalEventProps[];
-  nextIndex: number;
-  delayCount: number;
-  defaultBundle: Partial<Bundle>;
-  logList: LogEventProps[];
-  logTimeout: NodeJS.Timeout | false;
-  isLogSending: boolean;
-  logDelayCount: number;
-  defaultLogBundle: Partial<LogBundle>;
-  hasHupHandler: boolean = false;
+  private apiBaseUrl: string;
+  private isReady: boolean;
+  private isSending: boolean;
+  private timeout: NodeJS.Timeout | false;
+  private apiKey: string | false;
+  private orgName: string | false;
+  private appVer: string;
+  private serverVer: string;
+  private userTag: boolean;
+  private eventList: InternalEventProps[];
+  private nextIndex: number;
+  private delayCount: number;
+  private defaultBundle: Partial<Bundle>;
+  private logList: LogEventProps[];
+  private logTimeout: NodeJS.Timeout | false;
+  private isLogSending: boolean;
+  private logDelayCount: number;
+  private defaultLogBundle: Partial<LogBundle>;
+  private hasHupHandler: boolean = false;
 
   constructor() {
     this.apiBaseUrl = API_BASE_URL;
@@ -217,7 +207,7 @@ export class DataCortex {
     return this;
   }
 
-  init(opts: InitOptions, done?: () => void): void {
+  public init(opts: InitOptions, done?: () => void): void {
     if (!done) {
       done = function () {};
     }
@@ -272,45 +262,40 @@ export class DataCortex {
     this.isReady = true;
     done();
   }
-
-  setDeviceTag(tag: string): void {
+  public setDeviceTag(tag: string): void {
     if (tag) {
       this.defaultBundle.device_tag = tag;
     } else {
       delete this.defaultBundle.device_tag;
     }
   }
-
-  setUserTag(tag: string): void {
+  public setUserTag(tag: string): void {
     if (tag) {
       this.defaultBundle.user_tag = tag;
     } else {
       delete this.defaultBundle.user_tag;
     }
   }
-
-  install(props: InstallProps): void {
+  public install(props: InstallProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
     this._internalEventAdd(props, 'install');
   }
 
-  dau(props: DauProps): void {
+  public dau(props: DauProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
     this._internalEventAdd(props, 'dau');
   }
-
-  event(props: EventProps): void {
+  public event(props: EventProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
     this._internalEventAdd(props, 'event');
   }
-
-  messageSend(props: MessageSendProps): void {
+  public messageSend(props: MessageSendProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
@@ -325,8 +310,7 @@ export class DataCortex {
     }
     this._internalEventAdd(props, 'message_send');
   }
-
-  messageClick(props: MessageClickProps): void {
+  public messageClick(props: MessageClickProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
@@ -341,8 +325,7 @@ export class DataCortex {
     }
     this._internalEventAdd(props, 'message_click');
   }
-
-  economy(props: EconomyProps): void {
+  public economy(props: EconomyProps): void {
     if (!props || typeof props != 'object') {
       throw new Error('props must be an object');
     }
@@ -357,13 +340,11 @@ export class DataCortex {
     }
     this._internalEventAdd(props, 'economy');
   }
-
-  flush(): void {
+  public flush(): void {
     this._sendEvents();
     this._sendLogs();
   }
-
-  _internalEventAdd(input_props: InternalEventProps, type: string): void {
+  private _internalEventAdd(input_props: InternalEventProps, type: string): void {
     if (!input_props.device_tag && !this.defaultBundle.device_tag) {
       throw new Error('device_tag is required');
     }
@@ -407,8 +388,7 @@ export class DataCortex {
     this.eventList.push(_pick(props, BUNDLE_PROP_LIST));
     this._sendEventsLater();
   }
-
-  _sendEventsLater(delay?: number): void {
+  private _sendEventsLater(delay?: number): void {
     if (!delay) {
       delay = 0;
     }
@@ -419,8 +399,7 @@ export class DataCortex {
       }, delay);
     }
   }
-
-  _sendEvents(): void {
+  private _sendEvents(): void {
     if (this.isReady && !this.isSending && this.eventList.length > 0) {
       this.isSending = true;
 
@@ -482,16 +461,14 @@ export class DataCortex {
       });
     }
   }
-
-  _removeEvents(event_list: InternalEventProps[]): void {
+  private _removeEvents(event_list: InternalEventProps[]): void {
     this.eventList = this.eventList.filter((e) => {
       return !event_list.some((e2) => {
         return e.event_index == e2.event_index;
       });
     });
   }
-
-  log(...args: unknown[]): LogEventProps {
+  public log(...args: unknown[]): void {
     if (!args || args.length === 0) {
       throw new Error('log must have arguments');
     }
@@ -514,10 +491,9 @@ export class DataCortex {
         log_line += String(arg);
       }
     }
-    return this.logEvent({ log_line });
+    this.logEvent({ log_line });
   }
-
-  logEvent(props: LogEventProps): LogEventProps {
+  public logEvent(props: LogEventProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object.');
     }
@@ -557,14 +533,11 @@ export class DataCortex {
     const e = _pick(props, LOG_PROP_LIST);
     this.logList.push(e);
     this._sendLogsLater();
-    return e;
   }
-
-  _removeLogs(events: LogEventProps[]): void {
+  private _removeLogs(events: LogEventProps[]): void {
     this.logList.splice(0, events.length);
   }
-
-  _sendLogsLater(delay = 0): void {
+  private _sendLogsLater(delay = 0): void {
     if (!this.logTimeout && this.isReady && !this.isLogSending) {
       this.logTimeout = setTimeout(() => {
         this.logTimeout = false;
@@ -572,8 +545,7 @@ export class DataCortex {
       }, delay);
     }
   }
-
-  _sendLogs(): void {
+  private _sendLogs(): void {
     if (this.isReady && !this.isLogSending && this.logList.length > 0) {
       this.isLogSending = true;
 
@@ -614,7 +586,6 @@ export class DataCortex {
     }
   }
 }
-
 function _isError(e: unknown): e is Error {
   return (
     e !== null &&
@@ -625,17 +596,14 @@ function _isError(e: unknown): e is Error {
     typeof (e as Error).message === 'string'
   );
 }
-
 function _defaultBundleEqual(a: InternalEventProps, b: InternalEventProps): boolean {
   return DEFAULT_BUNDLE_PROP_LIST.every((prop) => a[prop] === b[prop]);
 }
-
 function _errorLog(...args: unknown[]): void {
   const new_args: unknown[] = ['Data Cortex Error:'];
   new_args.push(...args);
   console.error(...new_args);
 }
-
 function _pick(obj: Record<string, unknown>, prop_list: string[]): Record<string, unknown> {
   const new_obj: Record<string, unknown> = {};
   prop_list.forEach((prop) => {
@@ -646,7 +614,6 @@ function _pick(obj: Record<string, unknown>, prop_list: string[]): Record<string
   });
   return new_obj;
 }
-
 function _objectEach(object: Record<string, number>, callback: (value: number, key: string, object: Record<string, number>) => void): void {
   Object.keys(object).forEach((key) => {
     const value = object[key];
@@ -655,7 +622,6 @@ function _objectEach(object: Record<string, number>, callback: (value: number, k
     }
   });
 }
-
 function _request(params: RequestParams, done: RequestCallback): void {
   let is_done = false;
   const opts: https.RequestOptions = {
@@ -700,9 +666,7 @@ function _request(params: RequestParams, done: RequestCallback): void {
   req.write(post_body);
   req.end();
 }
-
 export function create(): DataCortex {
   return new DataCortex();
 }
-
 export default { DataCortex, create };
