@@ -5,6 +5,8 @@ module.exports = [
       globals: {
         __dirname: true,
         Buffer: true,
+        BufferEncoding: true,
+        NodeJS: true,
         process: true,
         setTimeout: true,
         clearTimeout: true,
@@ -59,7 +61,7 @@ module.exports = [
       'import/no-named-as-default': 'off',
       'import/no-named-as-default-member': 'off',
       '@typescript-eslint/no-unused-vars': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-explicit-any': 'error',
       'no-async-promise-executor': 'off',
       '@typescript-eslint/no-require-imports': 0,
     },

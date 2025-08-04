@@ -23,6 +23,155 @@ const REST_TIMEOUT = 5 * 1000;
 
 const API_BASE_URL = 'https://api.data-cortex.com';
 
+// Public type definitions for DataCortex API
+export interface InitOptions {
+  apiKey: string;
+  orgName: string;
+  appVer?: string;
+  serverVer?: string;
+  baseUrl?: string;
+  deviceType?: string;
+  os?: string;
+  osVer?: string;
+  language?: string;
+  deviceTag?: string;
+  userTag?: string;
+  country?: string;
+  hostname?: string;
+  filename?: string;
+  noHupHandler?: boolean;
+}
+
+// Base properties that can be used in events
+export interface BaseEventProps {
+  kingdom?: string;
+  phylum?: string;
+  class?: string;
+  order?: string;
+  family?: string;
+  genus?: string;
+  species?: string;
+  channel?: string;
+  float1?: number;
+  float2?: number;
+  float3?: number;
+  float4?: number;
+  event_datetime?: string | Date;
+  device_tag?: string;
+  user_tag?: string;
+  [key: string]: unknown;
+}
+
+// Specific props for DataCortex.event() - only includes general event properties
+export type EventProps = BaseEventProps;
+
+// Specific props for DataCortex.install() and DataCortex.dau()
+export type InstallProps = BaseEventProps;
+
+export type DauProps = BaseEventProps;
+
+// Specific props for message-related events
+export interface MessageSendProps extends BaseEventProps {
+  network: string;
+  from_tag: string;
+  to_list: unknown;
+  spend_currency?: string;
+  spend_type?: string;
+  to_tag?: string;
+}
+
+export interface MessageClickProps extends BaseEventProps {
+  network: string;
+  from_tag: string;
+  to_tag: string;
+  spend_currency?: string;
+  spend_type?: string;
+  to_list?: unknown;
+}
+
+// Specific props for economy events
+export interface EconomyProps extends BaseEventProps {
+  spend_currency: string;
+  spend_amount: number;
+  spend_type?: string;
+  network?: string;
+  from_tag?: string;
+  to_tag?: string;
+  to_list?: unknown;
+}
+
+// Log event properties
+export interface LogEventProps {
+  event_datetime?: string | Date;
+  response_bytes?: number;
+  response_ms?: number;
+  hostname?: string;
+  filename?: string;
+  log_level?: string;
+  device_tag?: string;
+  user_tag?: string;
+  remote_address?: string;
+  log_line?: string;
+  device_type?: string;
+  os?: string;
+  os_ver?: string;
+  browser?: string;
+  browser_ver?: string;
+  country?: string;
+  language?: string;
+  [key: string]: unknown;
+}
+
+// Internal types (not exported as they're implementation details)
+interface InternalEventProps extends BaseEventProps {
+  spend_currency?: string;
+  spend_type?: string;
+  network?: string;
+  from_tag?: string;
+  to_tag?: string;
+  to_list?: unknown;
+  spend_amount?: number;
+  type?: string;
+  event_index?: number;
+  [key: string]: unknown;
+}
+
+interface Bundle {
+  api_key: string | false;
+  app_ver?: string;
+  server_ver?: string;
+  config_ver?: string;
+  user_tag?: string;
+  device_tag?: string;
+  device_type?: string;
+  os?: string;
+  os_ver?: string;
+  browser?: string;
+  browser_ver?: string;
+  marketplace?: string;
+  country?: string;
+  geo_ip_address?: string;
+  language?: string;
+  group_tag?: string;
+  events?: InternalEventProps[];
+  [key: string]: unknown;
+}
+
+interface LogBundle extends Bundle {
+  hostname?: string;
+  filename?: string;
+  events?: LogEventProps[];
+}
+
+interface RequestParams {
+  url: string;
+  body: Bundle | LogBundle;
+}
+
+interface RequestCallback {
+  (err: number | string | Error | null, body?: string): void;
+}
+
 export class DataCortex {
   apiBaseUrl: string;
   isReady: boolean;
@@ -33,15 +182,15 @@ export class DataCortex {
   appVer: string;
   serverVer: string;
   userTag: boolean;
-  eventList: any[];
+  eventList: InternalEventProps[];
   nextIndex: number;
   delayCount: number;
-  defaultBundle: any;
-  logList: any[];
+  defaultBundle: Partial<Bundle>;
+  logList: LogEventProps[];
   logTimeout: NodeJS.Timeout | false;
   isLogSending: boolean;
   logDelayCount: number;
-  defaultLogBundle: any;
+  defaultLogBundle: Partial<LogBundle>;
   hasHupHandler: boolean = false;
 
   constructor() {
@@ -63,11 +212,12 @@ export class DataCortex {
     this.logTimeout = false;
     this.isLogSending = false;
     this.logDelayCount = 0;
+    this.defaultLogBundle = {};
 
     return this;
   }
 
-  init(opts: any, done: () => void) {
+  init(opts: InitOptions, done?: () => void): void {
     if (!done) {
       done = function () {};
     }
@@ -123,7 +273,7 @@ export class DataCortex {
     done();
   }
 
-  setDeviceTag(tag: string) {
+  setDeviceTag(tag: string): void {
     if (tag) {
       this.defaultBundle.device_tag = tag;
     } else {
@@ -131,7 +281,7 @@ export class DataCortex {
     }
   }
 
-  setUserTag(tag: string) {
+  setUserTag(tag: string): void {
     if (tag) {
       this.defaultBundle.user_tag = tag;
     } else {
@@ -139,28 +289,28 @@ export class DataCortex {
     }
   }
 
-  install(props: any) {
+  install(props: InstallProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
     this._internalEventAdd(props, 'install');
   }
 
-  dau(props: any) {
+  dau(props: DauProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
     this._internalEventAdd(props, 'dau');
   }
 
-  event(props: any) {
+  event(props: EventProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
     this._internalEventAdd(props, 'event');
   }
 
-  messageSend(props: any) {
+  messageSend(props: MessageSendProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
@@ -176,7 +326,7 @@ export class DataCortex {
     this._internalEventAdd(props, 'message_send');
   }
 
-  messageClick(props: any) {
+  messageClick(props: MessageClickProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
@@ -192,7 +342,7 @@ export class DataCortex {
     this._internalEventAdd(props, 'message_click');
   }
 
-  economy(props: any) {
+  economy(props: EconomyProps): void {
     if (!props || typeof props != 'object') {
       throw new Error('props must be an object');
     }
@@ -208,14 +358,12 @@ export class DataCortex {
     this._internalEventAdd(props, 'economy');
   }
 
-  flush() {
+  flush(): void {
     this._sendEvents();
     this._sendLogs();
   }
 
-  
-
-  _internalEventAdd(input_props: any, type: string) {
+  _internalEventAdd(input_props: InternalEventProps, type: string): void {
     if (!input_props.device_tag && !this.defaultBundle.device_tag) {
       throw new Error('device_tag is required');
     }
@@ -230,8 +378,10 @@ export class DataCortex {
     STRING_PROP_LIST.forEach((p) => {
       if (p in props) {
         let val = props[p];
-        if (val && val.toString) {
+        if (val && typeof val === 'object' && 'toString' in val) {
           val = val.toString().slice(0, 32);
+        } else if (typeof val === 'string') {
+          val = val.slice(0, 32);
         } else {
           val = '';
         }
@@ -241,13 +391,16 @@ export class DataCortex {
     NUMBER_PROP_LIST.forEach((p) => {
       if (p in props) {
         let val = props[p];
+        let numVal: number;
         if (typeof val != 'number') {
-          val = parseFloat(val);
-        }
-        if (!isFinite(val)) {
-          delete props[val];
+          numVal = parseFloat(String(val));
         } else {
-          props[p] = val;
+          numVal = val;
+        }
+        if (!isFinite(numVal)) {
+          delete props[p];
+        } else {
+          props[p] = numVal;
         }
       }
     });
@@ -255,7 +408,7 @@ export class DataCortex {
     this._sendEventsLater();
   }
 
-  _sendEventsLater(delay?: number) {
+  _sendEventsLater(delay?: number): void {
     if (!delay) {
       delay = 0;
     }
@@ -267,21 +420,28 @@ export class DataCortex {
     }
   }
 
-  _sendEvents() {
+  _sendEvents(): void {
     if (this.isReady && !this.isSending && this.eventList.length > 0) {
       this.isSending = true;
 
-      const events: any[] = [];
+      const events: InternalEventProps[] = [];
       this.eventList.some((e) => {
         if (events.length === 0) {
           events.push(e);
-        } else if (_defaultBundleEqual(events[0], e)) {
+        } else if (events[0] && _defaultBundleEqual(events[0], e)) {
           events.push(e);
         }
         return events.length < EVENT_SEND_COUNT;
       });
-      const default_props = _pick(events[0], DEFAULT_BUNDLE_PROP_LIST);
-      const bundle = Object.assign({}, this.defaultBundle, default_props, {
+      
+      const firstEvent = events[0];
+      if (!firstEvent) {
+        this.isSending = false;
+        return;
+      }
+      
+      const default_props = _pick(firstEvent, DEFAULT_BUNDLE_PROP_LIST);
+      const bundle: Bundle = Object.assign({}, this.defaultBundle, default_props, {
         api_key: this.apiKey,
       });
       bundle.events = events.map((e) => _pick(e, EVENT_PROP_LIST));
@@ -311,8 +471,8 @@ export class DataCortex {
           this.delayCount = 0;
         }
 
-        if (remove) {
-          this._removeEvents(bundle.events);
+        if (remove && bundle.events) {
+          this._removeEvents(bundle.events as InternalEventProps[]);
         }
 
         this.isSending = false;
@@ -323,7 +483,7 @@ export class DataCortex {
     }
   }
 
-  _removeEvents(event_list: any[]) {
+  _removeEvents(event_list: InternalEventProps[]): void {
     this.eventList = this.eventList.filter((e) => {
       return !event_list.some((e2) => {
         return e.event_index == e2.event_index;
@@ -331,7 +491,7 @@ export class DataCortex {
     });
   }
 
-  log(...args: any[]) {
+  log(...args: unknown[]): LogEventProps {
     if (!args || args.length === 0) {
       throw new Error('log must have arguments');
     }
@@ -343,21 +503,21 @@ export class DataCortex {
       }
 
       if (_isError(arg)) {
-        log_line += arg.stack;
-      } else if (typeof arg === 'object') {
+        log_line += (arg as Error).stack;
+      } else if (typeof arg === 'object' && arg !== null) {
         try {
           log_line += JSON.stringify(arg);
         } catch (_e) {
-          log_line += arg;
+          log_line += String(arg);
         }
       } else {
-        log_line += arg;
+        log_line += String(arg);
       }
     }
-    this.logEvent({ log_line });
+    return this.logEvent({ log_line });
   }
 
-  logEvent(props: any) {
+  logEvent(props: LogEventProps): LogEventProps {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object.');
     }
@@ -366,11 +526,11 @@ export class DataCortex {
       props.event_datetime = new Date().toISOString();
     }
 
-    _objectEach(LOG_STRING_PROP_MAP, (max_len, p) => {
+    _objectEach(LOG_STRING_PROP_MAP, (max_len: number, p: string) => {
       if (p in props) {
         const val = props[p];
-        const s = val && val.toString();
-        if (s) {
+        const s = val && typeof val === 'object' && 'toString' in val ? val.toString() : String(val);
+        if (s && s !== 'undefined' && s !== 'null') {
           props[p] = s.slice(0, max_len);
         } else {
           delete props[p];
@@ -380,11 +540,14 @@ export class DataCortex {
     LOG_NUMBER_PROP_LIST.forEach((p) => {
       if (p in props) {
         let val = props[p];
+        let numVal: number;
         if (typeof val !== 'number') {
-          val = parseFloat(val);
+          numVal = parseFloat(String(val));
+        } else {
+          numVal = val;
         }
-        if (isFinite(val)) {
-          props[p] = val;
+        if (isFinite(numVal)) {
+          props[p] = numVal;
         } else {
           delete props[p];
         }
@@ -397,11 +560,11 @@ export class DataCortex {
     return e;
   }
 
-  _removeLogs(events: any[]) {
+  _removeLogs(events: LogEventProps[]): void {
     this.logList.splice(0, events.length);
   }
 
-  _sendLogsLater(delay = 0) {
+  _sendLogsLater(delay = 0): void {
     if (!this.logTimeout && this.isReady && !this.isLogSending) {
       this.logTimeout = setTimeout(() => {
         this.logTimeout = false;
@@ -410,11 +573,11 @@ export class DataCortex {
     }
   }
 
-  _sendLogs() {
+  _sendLogs(): void {
     if (this.isReady && !this.isLogSending && this.logList.length > 0) {
       this.isLogSending = true;
 
-      const bundle = Object.assign(
+      const bundle: LogBundle = Object.assign(
         {},
         this.defaultBundle,
         this.defaultLogBundle,
@@ -439,8 +602,8 @@ export class DataCortex {
         } else {
           this.logDelayCount = 0;
         }
-        if (remove) {
-          this._removeLogs(bundle.events);
+        if (remove && bundle.events) {
+          this._removeLogs(bundle.events as LogEventProps[]);
         }
 
         this.isLogSending = false;
@@ -452,27 +615,29 @@ export class DataCortex {
   }
 }
 
-
-
-function _isError(e: any) {
+function _isError(e: unknown): e is Error {
   return (
-    e &&
-    e.stack &&
-    e.message &&
-    typeof e.stack === 'string' &&
-    typeof e.message === 'string'
+    e !== null &&
+    typeof e === 'object' &&
+    'stack' in e &&
+    'message' in e &&
+    typeof (e as Error).stack === 'string' &&
+    typeof (e as Error).message === 'string'
   );
 }
-function _defaultBundleEqual(a: any, b: any) {
+
+function _defaultBundleEqual(a: InternalEventProps, b: InternalEventProps): boolean {
   return DEFAULT_BUNDLE_PROP_LIST.every((prop) => a[prop] === b[prop]);
 }
-function _errorLog(...args: any[]) {
-  const new_args = ['Data Cortex Error:'];
-  new_args.push.apply(new_args, args);
-  console.error.apply(console, new_args);
+
+function _errorLog(...args: unknown[]): void {
+  const new_args: unknown[] = ['Data Cortex Error:'];
+  new_args.push(...args);
+  console.error(...new_args);
 }
-function _pick(obj: any, prop_list: string[]) {
-  const new_obj: any = {};
+
+function _pick(obj: Record<string, unknown>, prop_list: string[]): Record<string, unknown> {
+  const new_obj: Record<string, unknown> = {};
   prop_list.forEach((prop) => {
     const val = obj[prop];
     if (val !== undefined) {
@@ -481,13 +646,17 @@ function _pick(obj: any, prop_list: string[]) {
   });
   return new_obj;
 }
-function _objectEach(object: any, callback: (value: any, key: string, object: any) => void) {
+
+function _objectEach(object: Record<string, number>, callback: (value: number, key: string, object: Record<string, number>) => void): void {
   Object.keys(object).forEach((key) => {
     const value = object[key];
-    callback(value, key, object);
+    if (value !== undefined) {
+      callback(value, key, object);
+    }
   });
 }
-function _request(params: any, done: (err: any, body?: any) => void) {
+
+function _request(params: RequestParams, done: RequestCallback): void {
   let is_done = false;
   const opts: https.RequestOptions = {
     method: 'POST',
@@ -502,7 +671,8 @@ function _request(params: any, done: (err: any, body?: any) => void) {
     post_body = JSON.stringify(params.body);
   } catch (e) {
     is_done = true;
-    done('bad_body_json', e);
+    done('bad_body_json', String(e));
+    return;
   }
 
   let err: number | Error | null = null;
@@ -530,7 +700,9 @@ function _request(params: any, done: (err: any, body?: any) => void) {
   req.write(post_body);
   req.end();
 }
-export function create() {
+
+export function create(): DataCortex {
   return new DataCortex();
 }
+
 export default { DataCortex, create };

@@ -1,25 +1,55 @@
-import { DataCortex } from './data_cortex';
+import { DataCortex, LogEventProps } from './data_cortex';
 
 export interface CreateLoggerParams {
   dataCortex: DataCortex;
-  prepareEvent?: (req: any, res: any, event: any) => void;
+  prepareEvent?: (req: ExpressRequest, res: ExpressResponse, event: LogEvent) => void;
   logConsole?: boolean;
 }
+
+export interface ExpressRequest {
+  _startTimestamp?: number;
+  ip: string;
+  method: string;
+  originalUrl: string;
+  httpVersionMajor: number;
+  httpVersionMinor: number;
+  get(header: string): string | undefined;
+}
+
+export interface ExpressResponse {
+  end: (chunk?: unknown, encoding?: BufferEncoding) => ExpressResponse;
+  getHeader(name: string): string | number | string[] | undefined;
+  statusCode: number;
+}
+
+export interface ExpressNext {
+  (): void;
+}
+
+export interface LogEvent extends LogEventProps {
+  event_datetime: Date;
+  response_ms: number;
+  response_bytes: number;
+  remote_address: string;
+  log_level: string;
+  log_line: string;
+}
+
 export function createLogger(params: CreateLoggerParams) {
   const { dataCortex, prepareEvent, logConsole } = params;
-  return function (req: any, res: any, next: any) {
+  return function (req: ExpressRequest, res: ExpressResponse, next: ExpressNext) {
     req._startTimestamp = Date.now();
     const end = res.end;
-    res.end = function (chunk: any, encoding: any) {
-      const response_ms = Date.now() - req._startTimestamp;
+    res.end = function (chunk?: unknown, encoding?: BufferEncoding) {
+      const response_ms = Date.now() - (req._startTimestamp || 0);
       const response_bytes = res.getHeader('content-length') || 0;
 
       res.end = end;
       const result = res.end(chunk, encoding);
-      const event: any = {
+      const event: LogEvent = {
         event_datetime: new Date(),
         response_ms,
-        response_bytes,
+        response_bytes: typeof response_bytes === 'number' ? response_bytes : 0,
         remote_address: req.ip,
         log_level: String(res.statusCode),
         log_line: `${req.method} ${req.originalUrl} HTTP/${req.httpVersionMajor}.${req.httpVersionMinor}`,
@@ -44,7 +74,8 @@ export function createLogger(params: CreateLoggerParams) {
     return next();
   };
 }
-function _fillUserAgent(event: any, ua: string) {
+
+function _fillUserAgent(event: LogEvent, ua: string | undefined): void {
   if (ua) {
     if (!event.os) {
       if (ua.indexOf('Win') !== -1) {
@@ -127,14 +158,15 @@ function _fillUserAgent(event: any, ua: string) {
       }
     }
     if (!event.device_family) {
-      event.device_family = event.device_type;
+      event.device_family = event.device_type || 'desktop';
     }
   }
 }
-function _regexGet(haystack: string, regex: RegExp, def: string) {
+
+function _regexGet(haystack: string, regex: RegExp, def: string): string {
   let ret = def;
   const matches = haystack.match(regex);
-  if (matches && matches.length > 1) {
+  if (matches && matches.length > 1 && matches[1] !== undefined) {
     ret = matches[1];
   }
   return ret;

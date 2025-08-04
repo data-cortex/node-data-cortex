@@ -134,6 +134,7 @@ class DataCortex {
         this.logTimeout = false;
         this.isLogSending = false;
         this.logDelayCount = 0;
+        this.defaultLogBundle = {};
         return this;
     }
     init(opts, done) {
@@ -283,8 +284,11 @@ class DataCortex {
         STRING_PROP_LIST.forEach((p) => {
             if (p in props) {
                 let val = props[p];
-                if (val && val.toString) {
+                if (val && typeof val === 'object' && 'toString' in val) {
                     val = val.toString().slice(0, 32);
+                }
+                else if (typeof val === 'string') {
+                    val = val.slice(0, 32);
                 }
                 else {
                     val = '';
@@ -295,14 +299,18 @@ class DataCortex {
         NUMBER_PROP_LIST.forEach((p) => {
             if (p in props) {
                 let val = props[p];
+                let numVal;
                 if (typeof val != 'number') {
-                    val = parseFloat(val);
-                }
-                if (!isFinite(val)) {
-                    delete props[val];
+                    numVal = parseFloat(String(val));
                 }
                 else {
-                    props[p] = val;
+                    numVal = val;
+                }
+                if (!isFinite(numVal)) {
+                    delete props[p];
+                }
+                else {
+                    props[p] = numVal;
                 }
             }
         });
@@ -328,12 +336,17 @@ class DataCortex {
                 if (events.length === 0) {
                     events.push(e);
                 }
-                else if (_defaultBundleEqual(events[0], e)) {
+                else if (events[0] && _defaultBundleEqual(events[0], e)) {
                     events.push(e);
                 }
                 return events.length < EVENT_SEND_COUNT;
             });
-            const default_props = _pick(events[0], DEFAULT_BUNDLE_PROP_LIST);
+            const firstEvent = events[0];
+            if (!firstEvent) {
+                this.isSending = false;
+                return;
+            }
+            const default_props = _pick(firstEvent, DEFAULT_BUNDLE_PROP_LIST);
             const bundle = Object.assign({}, this.defaultBundle, default_props, {
                 api_key: this.apiKey,
             });
@@ -362,7 +375,7 @@ class DataCortex {
                 else {
                     this.delayCount = 0;
                 }
-                if (remove) {
+                if (remove && bundle.events) {
                     this._removeEvents(bundle.events);
                 }
                 this.isSending = false;
@@ -392,20 +405,19 @@ class DataCortex {
             if (_isError(arg)) {
                 log_line += arg.stack;
             }
-            else if (typeof arg === 'object') {
+            else if (typeof arg === 'object' && arg !== null) {
                 try {
                     log_line += JSON.stringify(arg);
-                    //eslint-disable-next-line no-unused-vars
                 }
-                catch (e) {
-                    log_line += arg;
+                catch (_e) {
+                    log_line += String(arg);
                 }
             }
             else {
-                log_line += arg;
+                log_line += String(arg);
             }
         }
-        this.logEvent({ log_line });
+        return this.logEvent({ log_line });
     }
     logEvent(props) {
         if (!props || typeof props !== 'object') {
@@ -417,8 +429,8 @@ class DataCortex {
         _objectEach(LOG_STRING_PROP_MAP, (max_len, p) => {
             if (p in props) {
                 const val = props[p];
-                const s = val && val.toString();
-                if (s) {
+                const s = val && typeof val === 'object' && 'toString' in val ? val.toString() : String(val);
+                if (s && s !== 'undefined' && s !== 'null') {
                     props[p] = s.slice(0, max_len);
                 }
                 else {
@@ -429,11 +441,15 @@ class DataCortex {
         LOG_NUMBER_PROP_LIST.forEach((p) => {
             if (p in props) {
                 let val = props[p];
+                let numVal;
                 if (typeof val !== 'number') {
-                    val = parseFloat(val);
+                    numVal = parseFloat(String(val));
                 }
-                if (isFinite(val)) {
-                    props[p] = val;
+                else {
+                    numVal = val;
+                }
+                if (isFinite(numVal)) {
+                    props[p] = numVal;
                 }
                 else {
                     delete props[p];
@@ -481,7 +497,7 @@ class DataCortex {
                 else {
                     this.logDelayCount = 0;
                 }
-                if (remove) {
+                if (remove && bundle.events) {
                     this._removeLogs(bundle.events);
                 }
                 this.isLogSending = false;
@@ -493,9 +509,10 @@ class DataCortex {
     }
 }
 function _isError(e) {
-    return (e &&
-        e.stack &&
-        e.message &&
+    return (e !== null &&
+        typeof e === 'object' &&
+        'stack' in e &&
+        'message' in e &&
         typeof e.stack === 'string' &&
         typeof e.message === 'string');
 }
@@ -504,8 +521,8 @@ function _defaultBundleEqual(a, b) {
 }
 function _errorLog(...args) {
     const new_args = ['Data Cortex Error:'];
-    new_args.push.apply(new_args, args);
-    console.error.apply(console, new_args);
+    new_args.push(...args);
+    console.error(...new_args);
 }
 function _pick(obj, prop_list) {
     const new_obj = {};
@@ -520,7 +537,9 @@ function _pick(obj, prop_list) {
 function _objectEach(object, callback) {
     Object.keys(object).forEach((key) => {
         const value = object[key];
-        callback(value, key, object);
+        if (value !== undefined) {
+            callback(value, key, object);
+        }
     });
 }
 function _request(params, done) {
@@ -539,7 +558,8 @@ function _request(params, done) {
     }
     catch (e) {
         is_done = true;
-        done('bad_body_json', e);
+        done('bad_body_json', String(e));
+        return;
     }
     let err = null;
     let response_body = '';
@@ -576,14 +596,14 @@ function createLogger(params) {
         req._startTimestamp = Date.now();
         const end = res.end;
         res.end = function (chunk, encoding) {
-            const response_ms = Date.now() - req._startTimestamp;
+            const response_ms = Date.now() - (req._startTimestamp || 0);
             const response_bytes = res.getHeader('content-length') || 0;
             res.end = end;
             const result = res.end(chunk, encoding);
             const event = {
                 event_datetime: new Date(),
                 response_ms,
-                response_bytes,
+                response_bytes: typeof response_bytes === 'number' ? response_bytes : 0,
                 remote_address: req.ip,
                 log_level: String(res.statusCode),
                 log_line: `${req.method} ${req.originalUrl} HTTP/${req.httpVersionMajor}.${req.httpVersionMinor}`,
@@ -707,19 +727,20 @@ function _fillUserAgent(event, ua) {
             }
         }
         if (!event.device_family) {
-            event.device_family = event.device_type;
+            event.device_family = event.device_type || 'desktop';
         }
     }
 }
 function _regexGet(haystack, regex, def) {
     let ret = def;
     const matches = haystack.match(regex);
-    if (matches && matches.length > 1) {
+    if (matches && matches.length > 1 && matches[1] !== undefined) {
         ret = matches[1];
     }
     return ret;
 }
 
+// Default instance and bound methods
 const defaultObject = create();
 const init = DataCortex.prototype.init.bind(defaultObject);
 const setDeviceTag = DataCortex.prototype.setDeviceTag.bind(defaultObject);
@@ -751,6 +772,9 @@ var index = {
     createLogger,
 };
 
+exports.DataCortex = DataCortex;
+exports.create = create;
+exports.createLogger = createLogger;
 exports.dau = dau;
 exports.default = index;
 exports.defaultObject = defaultObject;

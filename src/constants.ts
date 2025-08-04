@@ -43,7 +43,7 @@ export const EVENT_PROP_LIST: string[] = [...STRING_PROP_LIST, ...NUMBER_PROP_LI
 export const BUNDLE_PROP_LIST: string[] = [...EVENT_PROP_LIST, ...DEFAULT_BUNDLE_PROP_LIST];
 
 export const LOG_NUMBER_PROP_LIST = ['response_bytes', 'response_ms'];
-export const LOG_STRING_PROP_MAP: any = {
+export const LOG_STRING_PROP_MAP: Record<string, number> = {
   hostname: 64,
   filename: 256,
   log_level: 64,

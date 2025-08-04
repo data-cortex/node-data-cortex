@@ -1,6 +1,34 @@
 import { DataCortex, create } from './data_cortex';
 import { createLogger } from './middleware';
 
+// Export all public types
+export type {
+  InitOptions,
+  BaseEventProps,
+  EventProps,
+  InstallProps,
+  DauProps,
+  MessageSendProps,
+  MessageClickProps,
+  EconomyProps,
+  LogEventProps,
+} from './data_cortex';
+
+export type {
+  CreateLoggerParams,
+  ExpressRequest,
+  ExpressResponse,
+  ExpressNext,
+  LogEvent,
+} from './middleware';
+
+// Export the DataCortex class and create function
+export { DataCortex, create };
+
+// Export the middleware function
+export { createLogger };
+
+// Default instance and bound methods
 export const defaultObject = create();
 export const init = DataCortex.prototype.init.bind(defaultObject);
 export const setDeviceTag = DataCortex.prototype.setDeviceTag.bind(defaultObject);

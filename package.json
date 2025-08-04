@@ -12,7 +12,7 @@
     "pretty": "prettier --write '**/*.js' '**/*.json'",
     "ts-check": "tsc --noEmit",
     "build": "npm run ts-check && rollup -c",
-    "test": "npm run build && node --test test/test.ts"
+    "test": "npm run build && tsx --test test/test.ts"
   },
   "repository": {
     "type": "git",
