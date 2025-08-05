@@ -5,7 +5,6 @@ import type { Request, Response } from 'express';
 
 export default { createLogger };
 
-
 export interface MiddlewareLogEvent extends LogEventProps {
   event_datetime: Date;
   response_ms: number;

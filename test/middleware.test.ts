@@ -1,6 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { createLogger, CreateLoggerParams, MiddlewareLogEvent } from '../src/middleware';
+import {
+  createLogger,
+  CreateLoggerParams,
+  MiddlewareLogEvent,
+} from '../src/middleware';
 import { DataCortex } from '../src/data_cortex';
 import { EventEmitter } from 'node:events';
 
