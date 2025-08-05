@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Write data cortex events to bulk api endpoint",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "type": "commonjs",
   "files": [
     "dist/*"
