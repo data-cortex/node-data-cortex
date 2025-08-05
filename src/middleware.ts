@@ -9,7 +9,11 @@ export interface CreateLoggerParams {
   prepareEvent?: (req: unknown, res: unknown, event: LogEventProps) => void;
   logConsole?: boolean;
 }
-type CreateLoggerResult = (req: unknown, res: unknown, next: () => void) => void;
+type CreateLoggerResult = (
+  req: unknown,
+  res: unknown,
+  next: () => void
+) => void;
 export function createLogger(params: CreateLoggerParams): CreateLoggerResult {
   const { dataCortex, prepareEvent, logConsole } = params;
   return function (req: Request, res: Response, next: NextFunction) {

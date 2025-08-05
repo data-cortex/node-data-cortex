@@ -17,13 +17,14 @@ function createMockRequest(overrides: any = {}): any {
     httpVersionMinor: 1,
     get: (header: string) => {
       const headers: Record<string, string> = {
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-        'referrer': 'https://example.com',
-        ...overrides.headers
+        'user-agent':
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        referrer: 'https://example.com',
+        ...overrides.headers,
       };
       return headers[header.toLowerCase()];
     },
-    ...overrides
+    ...overrides,
   };
 }
 
@@ -31,14 +32,14 @@ function createMockRequest(overrides: any = {}): any {
 function createMockResponse(overrides: any = {}): any {
   const headers: Record<string, string | number> = {
     'content-length': 1024,
-    ...overrides.headers
+    ...overrides.headers,
   };
-  
+
   const res = new EventEmitter();
   Object.assign(res, {
     statusCode: 200,
     getHeader: (name: string) => headers[name.toLowerCase()],
-    end: function(chunk?: unknown, encoding?: BufferEncoding) {
+    end: function (chunk?: unknown, encoding?: BufferEncoding) {
       // Simulate the response finishing
       setImmediate(() => {
         this.emit('finish');
@@ -47,9 +48,9 @@ function createMockResponse(overrides: any = {}): any {
     },
     finished: false,
     headersSent: false,
-    ...overrides
+    ...overrides,
   });
-  
+
   return res;
 }
 
@@ -61,7 +62,7 @@ function createMockNext(): any {
 test('createLogger returns middleware function', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   assert.strictEqual(typeof middleware, 'function');
 });
@@ -69,14 +70,14 @@ test('createLogger returns middleware function', () => {
 test('middleware sets up response monitoring', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest();
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
-  
+
   // Verify middleware was called without error
   assert.ok(true);
 });
@@ -84,17 +85,17 @@ test('middleware sets up response monitoring', () => {
 test('middleware logs event when response ends', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest();
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
-  
+
   // Simulate response end
   res.end();
-  
+
   // Wait for the event to be processed
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
@@ -111,17 +112,17 @@ test('middleware logs event when response ends', (t, done) => {
 test('middleware handles missing content-length header', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest();
   const res = createMockResponse({
-    getHeader: () => undefined
+    getHeader: () => undefined,
   });
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     assert.strictEqual(dc.logList[0].response_bytes, 0);
@@ -132,15 +133,15 @@ test('middleware handles missing content-length header', (t, done) => {
 test('middleware sets filename from referrer header', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest();
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     assert.strictEqual(dc.logList[0].filename, 'https://example.com');
@@ -151,7 +152,7 @@ test('middleware sets filename from referrer header', (t, done) => {
 test('middleware parses Windows user agent', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest({
     get: (header: string) => {
@@ -159,14 +160,14 @@ test('middleware parses Windows user agent', (t, done) => {
         return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
       }
       return undefined;
-    }
+    },
   });
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];
@@ -182,7 +183,7 @@ test('middleware parses Windows user agent', (t, done) => {
 test('middleware parses iPhone user agent', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest({
     get: (header: string) => {
@@ -190,14 +191,14 @@ test('middleware parses iPhone user agent', (t, done) => {
         return 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1';
       }
       return undefined;
-    }
+    },
   });
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];
@@ -212,7 +213,7 @@ test('middleware parses iPhone user agent', (t, done) => {
 test('middleware parses iPad user agent', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest({
     get: (header: string) => {
@@ -220,14 +221,14 @@ test('middleware parses iPad user agent', (t, done) => {
         return 'Mozilla/5.0 (iPad; CPU OS 14_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Mobile/15E148 Safari/604.1';
       }
       return undefined;
-    }
+    },
   });
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];
@@ -242,7 +243,7 @@ test('middleware parses iPad user agent', (t, done) => {
 test('middleware parses Mac user agent', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest({
     get: (header: string) => {
@@ -250,14 +251,14 @@ test('middleware parses Mac user agent', (t, done) => {
         return 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
       }
       return undefined;
-    }
+    },
   });
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];
@@ -272,7 +273,7 @@ test('middleware parses Mac user agent', (t, done) => {
 test('middleware parses Android mobile user agent', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest({
     get: (header: string) => {
@@ -280,14 +281,14 @@ test('middleware parses Android mobile user agent', (t, done) => {
         return 'Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Mobile Safari/537.36';
       }
       return undefined;
-    }
+    },
   });
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];
@@ -302,7 +303,7 @@ test('middleware parses Android mobile user agent', (t, done) => {
 test('middleware parses Android tablet user agent', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest({
     get: (header: string) => {
@@ -310,14 +311,14 @@ test('middleware parses Android tablet user agent', (t, done) => {
         return 'Mozilla/5.0 (Linux; Android 11; SM-T870) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
       }
       return undefined;
-    }
+    },
   });
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];
@@ -332,7 +333,7 @@ test('middleware parses Android tablet user agent', (t, done) => {
 test('middleware parses Firefox user agent', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest({
     get: (header: string) => {
@@ -340,14 +341,14 @@ test('middleware parses Firefox user agent', (t, done) => {
         return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0';
       }
       return undefined;
-    }
+    },
   });
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];
@@ -360,7 +361,7 @@ test('middleware parses Firefox user agent', (t, done) => {
 test('middleware parses Edge user agent', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest({
     get: (header: string) => {
@@ -368,14 +369,14 @@ test('middleware parses Edge user agent', (t, done) => {
         return 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edge/91.0.864.59';
       }
       return undefined;
-    }
+    },
   });
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];
@@ -388,7 +389,7 @@ test('middleware parses Edge user agent', (t, done) => {
 test('middleware parses Internet Explorer user agent', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest({
     get: (header: string) => {
@@ -396,14 +397,14 @@ test('middleware parses Internet Explorer user agent', (t, done) => {
         return 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko';
       }
       return undefined;
-    }
+    },
   });
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];
@@ -416,7 +417,7 @@ test('middleware parses Internet Explorer user agent', (t, done) => {
 test('middleware parses Linux user agent', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest({
     get: (header: string) => {
@@ -424,14 +425,14 @@ test('middleware parses Linux user agent', (t, done) => {
         return 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
       }
       return undefined;
-    }
+    },
   });
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];
@@ -443,7 +444,7 @@ test('middleware parses Linux user agent', (t, done) => {
 test('middleware handles unknown user agent gracefully', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest({
     get: (header: string) => {
@@ -451,14 +452,14 @@ test('middleware handles unknown user agent gracefully', (t, done) => {
         return 'UnknownBot/1.0';
       }
       return undefined;
-    }
+    },
   });
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];
@@ -470,23 +471,23 @@ test('middleware handles unknown user agent gracefully', (t, done) => {
 test('middleware calls prepareEvent callback when provided', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   let prepareEventCalled = false;
   const middleware = createLogger({
     dataCortex: dc,
     prepareEvent: (req, res, event) => {
       prepareEventCalled = true;
       event.user_tag = 'test_user';
-    }
+    },
   });
-  
+
   const req = createMockRequest();
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(prepareEventCalled, true);
     assert.strictEqual(dc.logList.length, 1);
@@ -498,29 +499,29 @@ test('middleware calls prepareEvent callback when provided', (t, done) => {
 test('middleware logs to console when logConsole is true', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   // Mock console.log to capture output
   const originalConsoleLog = console.log;
   let consoleLogCalled = false;
   console.log = () => {
     consoleLogCalled = true;
   };
-  
+
   const middleware = createLogger({
     dataCortex: dc,
-    logConsole: true
+    logConsole: true,
   });
-  
+
   const req = createMockRequest();
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(consoleLogCalled, true);
-    
+
     // Restore console.log
     console.log = originalConsoleLog;
     done();
@@ -530,29 +531,29 @@ test('middleware logs to console when logConsole is true', (t, done) => {
 test('middleware does not log to console when logConsole is false', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   // Mock console.log to capture output
   const originalConsoleLog = console.log;
   let consoleLogCalled = false;
   console.log = () => {
     consoleLogCalled = true;
   };
-  
+
   const middleware = createLogger({
     dataCortex: dc,
-    logConsole: false
+    logConsole: false,
   });
-  
+
   const req = createMockRequest();
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(consoleLogCalled, false);
-    
+
     // Restore console.log
     console.log = originalConsoleLog;
     done();
@@ -562,15 +563,15 @@ test('middleware does not log to console when logConsole is false', (t, done) =>
 test('middleware handles missing _startTimestamp gracefully', (t, done) => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const middleware = createLogger({ dataCortex: dc });
   const req = createMockRequest();
   const res = createMockResponse();
   const next = createMockNext();
-  
+
   middleware(req, res, next);
   res.end();
-  
+
   setImmediate(() => {
     assert.strictEqual(dc.logList.length, 1);
     const logEvent = dc.logList[0];

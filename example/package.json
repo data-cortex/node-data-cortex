@@ -1,6 +1,6 @@
 {
   "private": true,
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^5"
   }
 }

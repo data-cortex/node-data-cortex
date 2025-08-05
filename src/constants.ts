@@ -20,7 +20,12 @@ export const NUMBER_PROP_LIST = [
   'float4',
   'spend_amount',
 ];
-export const OTHER_PROP_LIST = ['type', 'event_index', 'event_datetime', 'to_list'];
+export const OTHER_PROP_LIST = [
+  'type',
+  'event_index',
+  'event_datetime',
+  'to_list',
+];
 export const DEFAULT_BUNDLE_PROP_LIST = [
   'app_ver',
   'server_ver',
@@ -39,8 +44,15 @@ export const DEFAULT_BUNDLE_PROP_LIST = [
   'group_tag',
 ];
 
-export const EVENT_PROP_LIST: string[] = [...STRING_PROP_LIST, ...NUMBER_PROP_LIST, ...OTHER_PROP_LIST];
-export const BUNDLE_PROP_LIST: string[] = [...EVENT_PROP_LIST, ...DEFAULT_BUNDLE_PROP_LIST];
+export const EVENT_PROP_LIST: string[] = [
+  ...STRING_PROP_LIST,
+  ...NUMBER_PROP_LIST,
+  ...OTHER_PROP_LIST,
+];
+export const BUNDLE_PROP_LIST: string[] = [
+  ...EVENT_PROP_LIST,
+  ...DEFAULT_BUNDLE_PROP_LIST,
+];
 
 export const LOG_NUMBER_PROP_LIST = ['response_bytes', 'response_ms'];
 export const LOG_STRING_PROP_MAP: Record<string, number> = {
@@ -63,4 +75,7 @@ export const LOG_OTHER_PROP_LIST = [
   'language',
 ];
 
-export const LOG_PROP_LIST = LOG_NUMBER_PROP_LIST.concat(Object.keys(LOG_STRING_PROP_MAP), LOG_OTHER_PROP_LIST);
+export const LOG_PROP_LIST = LOG_NUMBER_PROP_LIST.concat(
+  Object.keys(LOG_STRING_PROP_MAP),
+  LOG_OTHER_PROP_LIST
+);

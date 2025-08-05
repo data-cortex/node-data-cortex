@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "lint": "eslint src",
-    "pretty": "prettier --write '**/*.js' '**/*.json'",
+    "pretty": "prettier --write '**/*.js' '**/*.ts' '**/*.json'",
     "ts-check": "tsc --noEmit",
     "build": "npm run ts-check && rollup -c",
     "test": "npm run build && tsx --test test/test.ts",

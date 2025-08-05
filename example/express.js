@@ -2,7 +2,7 @@ const express = require('express');
 const http = require('node:http');
 const path = require('node:path');
 
-const dataCortex = require('../src/index.js');
+const dataCortex = require('../dist/index.js');
 
 console.log('express example');
 

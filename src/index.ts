@@ -14,9 +14,7 @@ export type {
   LogEventProps,
 } from './data_cortex';
 
-export type {
-  CreateLoggerParams,
-} from './middleware';
+export type { CreateLoggerParams } from './middleware';
 
 // Export the DataCortex class and create function
 export { DataCortex, create };
@@ -27,7 +25,8 @@ export { createLogger };
 // Default instance and bound methods
 export const defaultObject = create();
 export const init = DataCortex.prototype.init.bind(defaultObject);
-export const setDeviceTag = DataCortex.prototype.setDeviceTag.bind(defaultObject);
+export const setDeviceTag =
+  DataCortex.prototype.setDeviceTag.bind(defaultObject);
 export const setUserTag = DataCortex.prototype.setUserTag.bind(defaultObject);
 export const flush = DataCortex.prototype.flush.bind(defaultObject);
 export const install = DataCortex.prototype.install.bind(defaultObject);
@@ -35,7 +34,8 @@ export const dau = DataCortex.prototype.dau.bind(defaultObject);
 export const event = DataCortex.prototype.event.bind(defaultObject);
 export const economy = DataCortex.prototype.economy.bind(defaultObject);
 export const messageSend = DataCortex.prototype.messageSend.bind(defaultObject);
-export const messageClick = DataCortex.prototype.messageClick.bind(defaultObject);
+export const messageClick =
+  DataCortex.prototype.messageClick.bind(defaultObject);
 export const log = DataCortex.prototype.log.bind(defaultObject);
 export const logEvent = DataCortex.prototype.logEvent.bind(defaultObject);
 

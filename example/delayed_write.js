@@ -1,6 +1,6 @@
 'use strict';
 
-const dataCortex = require('../src/index.js');
+const dataCortex = require('../dist/index.js');
 
 console.log('delayed example');
 

@@ -52,7 +52,7 @@ test('init sets basic properties correctly', () => {
     appVer: '1.0.0',
     serverVer: '2.0.0',
   });
-  
+
   assert.strictEqual(dc.apiKey, API_KEY);
   assert.strictEqual(dc.orgName, ORG_NAME);
   assert.strictEqual(dc.appVer, '1.0.0');
@@ -74,7 +74,7 @@ test('init sets default bundle properties', () => {
     userTag: 'user456',
     country: 'US',
   });
-  
+
   assert.strictEqual(dc.defaultBundle.app_ver, '1.0.0');
   assert.strictEqual(dc.defaultBundle.device_type, 'mobile');
   assert.strictEqual(dc.defaultBundle.os, 'ios');
@@ -93,7 +93,7 @@ test('init sets default log bundle properties', () => {
     hostname: 'test-host',
     filename: 'test-file.js',
   });
-  
+
   assert.strictEqual(dc.defaultLogBundle.hostname, 'test-host');
   assert.strictEqual(dc.defaultLogBundle.filename, 'test-file.js');
 });
@@ -104,26 +104,29 @@ test('init uses os.hostname() when hostname not provided', () => {
     apiKey: API_KEY,
     orgName: ORG_NAME,
   });
-  
+
   assert.ok(dc.defaultLogBundle.hostname);
   assert.ok(typeof dc.defaultLogBundle.hostname === 'string');
 });
 
 test('init calls done callback when provided', (t, done) => {
   const dc = new DataCortex();
-  dc.init({
-    apiKey: API_KEY,
-    orgName: ORG_NAME,
-  }, () => {
-    assert.strictEqual(dc.isReady, true);
-    done();
-  });
+  dc.init(
+    {
+      apiKey: API_KEY,
+      orgName: ORG_NAME,
+    },
+    () => {
+      assert.strictEqual(dc.isReady, true);
+      done();
+    }
+  );
 });
 
 test('setDeviceTag sets device tag', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   dc.setDeviceTag('new_device');
   assert.strictEqual(dc.defaultBundle.device_tag, 'new_device');
 });
@@ -131,7 +134,7 @@ test('setDeviceTag sets device tag', () => {
 test('setDeviceTag removes device tag when empty', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'old_device' });
-  
+
   dc.setDeviceTag('');
   assert.strictEqual(dc.defaultBundle.device_tag, undefined);
 });
@@ -139,7 +142,7 @@ test('setDeviceTag removes device tag when empty', () => {
 test('setUserTag sets user tag', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   dc.setUserTag('new_user');
   assert.strictEqual(dc.defaultBundle.user_tag, 'new_user');
 });
@@ -147,7 +150,7 @@ test('setUserTag sets user tag', () => {
 test('setUserTag removes user tag when empty', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, userTag: 'old_user' });
-  
+
   dc.setUserTag('');
   assert.strictEqual(dc.defaultBundle.user_tag, undefined);
 });
@@ -155,11 +158,11 @@ test('setUserTag removes user tag when empty', () => {
 test('install throws error when props is not an object', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.install(null as any);
   }, /props must be an object/);
-  
+
   assert.throws(() => {
     dc.install('string' as any);
   }, /props must be an object/);
@@ -168,7 +171,7 @@ test('install throws error when props is not an object', () => {
 test('install adds event to eventList', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   dc.install({ kingdom: 'test' });
   assert.strictEqual(dc.eventList.length, 1);
   assert.strictEqual(dc.eventList[0].type, 'install');
@@ -178,7 +181,7 @@ test('install adds event to eventList', () => {
 test('dau throws error when props is not an object', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.dau(null as any);
   }, /props must be an object/);
@@ -187,7 +190,7 @@ test('dau throws error when props is not an object', () => {
 test('dau adds event to eventList', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   dc.dau({ kingdom: 'test' });
   assert.strictEqual(dc.eventList.length, 1);
   assert.strictEqual(dc.eventList[0].type, 'dau');
@@ -196,7 +199,7 @@ test('dau adds event to eventList', () => {
 test('event throws error when props is not an object', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.event(null as any);
   }, /props must be an object/);
@@ -205,7 +208,7 @@ test('event throws error when props is not an object', () => {
 test('event adds event to eventList', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   dc.event({ kingdom: 'test' });
   assert.strictEqual(dc.eventList.length, 1);
   assert.strictEqual(dc.eventList[0].type, 'event');
@@ -214,7 +217,7 @@ test('event adds event to eventList', () => {
 test('messageSend throws error when props is not an object', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.messageSend(null as any);
   }, /props must be an object/);
@@ -223,7 +226,7 @@ test('messageSend throws error when props is not an object', () => {
 test('messageSend throws error when network is missing', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.messageSend({ from_tag: 'sender', to_list: ['recipient'] });
   }, /network is required/);
@@ -232,7 +235,7 @@ test('messageSend throws error when network is missing', () => {
 test('messageSend throws error when from_tag is missing', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.messageSend({ network: 'email', to_list: ['recipient'] });
   }, /from_tag is required/);
@@ -241,7 +244,7 @@ test('messageSend throws error when from_tag is missing', () => {
 test('messageSend throws error when to_list is missing', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.messageSend({ network: 'email', from_tag: 'sender' });
   }, /to_list is required/);
@@ -250,8 +253,12 @@ test('messageSend throws error when to_list is missing', () => {
 test('messageSend adds event to eventList', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
-  dc.messageSend({ network: 'email', from_tag: 'sender', to_list: ['recipient'] });
+
+  dc.messageSend({
+    network: 'email',
+    from_tag: 'sender',
+    to_list: ['recipient'],
+  });
   assert.strictEqual(dc.eventList.length, 1);
   assert.strictEqual(dc.eventList[0].type, 'message_send');
 });
@@ -259,7 +266,7 @@ test('messageSend adds event to eventList', () => {
 test('messageClick throws error when props is not an object', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.messageClick(null as any);
   }, /props must be an object/);
@@ -268,7 +275,7 @@ test('messageClick throws error when props is not an object', () => {
 test('messageClick throws error when network is missing', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.messageClick({ from_tag: 'sender', to_tag: 'recipient' });
   }, /network is required/);
@@ -277,7 +284,7 @@ test('messageClick throws error when network is missing', () => {
 test('messageClick throws error when from_tag is missing', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.messageClick({ network: 'email', to_tag: 'recipient' });
   }, /from_tag is required/);
@@ -286,7 +293,7 @@ test('messageClick throws error when from_tag is missing', () => {
 test('messageClick throws error when to_tag is missing', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.messageClick({ network: 'email', from_tag: 'sender' });
   }, /to_tag is required/);
@@ -295,8 +302,12 @@ test('messageClick throws error when to_tag is missing', () => {
 test('messageClick adds event to eventList', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
-  dc.messageClick({ network: 'email', from_tag: 'sender', to_tag: 'recipient' });
+
+  dc.messageClick({
+    network: 'email',
+    from_tag: 'sender',
+    to_tag: 'recipient',
+  });
   assert.strictEqual(dc.eventList.length, 1);
   assert.strictEqual(dc.eventList[0].type, 'message_click');
 });
@@ -304,7 +315,7 @@ test('messageClick adds event to eventList', () => {
 test('economy throws error when props is not an object', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.economy(null as any);
   }, /props must be an object/);
@@ -313,7 +324,7 @@ test('economy throws error when props is not an object', () => {
 test('economy throws error when spend_currency is missing', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.economy({ spend_amount: 10 });
   }, /spend_currency is required/);
@@ -322,7 +333,7 @@ test('economy throws error when spend_currency is missing', () => {
 test('economy throws error when spend_amount is not a number', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.economy({ spend_currency: 'USD', spend_amount: 'ten' as any });
   }, /spend_amount is required/);
@@ -331,7 +342,7 @@ test('economy throws error when spend_amount is not a number', () => {
 test('economy throws error when spend_amount is not finite', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   assert.throws(() => {
     dc.economy({ spend_currency: 'USD', spend_amount: Infinity });
   }, /spend_amount must be finite/);
@@ -340,18 +351,18 @@ test('economy throws error when spend_amount is not finite', () => {
 test('economy adds event to eventList', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
-  dc.economy({ spend_currency: 'USD', spend_amount: 10.50 });
+
+  dc.economy({ spend_currency: 'USD', spend_amount: 10.5 });
   assert.strictEqual(dc.eventList.length, 1);
   assert.strictEqual(dc.eventList[0].type, 'economy');
   assert.strictEqual(dc.eventList[0].spend_currency, 'USD');
-  assert.strictEqual(dc.eventList[0].spend_amount, 10.50);
+  assert.strictEqual(dc.eventList[0].spend_amount, 10.5);
 });
 
 test('_internalEventAdd throws error when device_tag is missing', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   assert.throws(() => {
     dc.install({ kingdom: 'test' });
   }, /device_tag is required/);
@@ -360,10 +371,10 @@ test('_internalEventAdd throws error when device_tag is missing', () => {
 test('_internalEventAdd sets event properties correctly', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   dc.event({ kingdom: 'test' });
   const event = dc.eventList[0];
-  
+
   assert.strictEqual(event.type, 'event');
   assert.strictEqual(event.event_index, 0);
   assert.ok(event.event_datetime);
@@ -373,10 +384,10 @@ test('_internalEventAdd sets event properties correctly', () => {
 test('_internalEventAdd increments nextIndex', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   dc.event({ kingdom: 'test1' });
   dc.event({ kingdom: 'test2' });
-  
+
   assert.strictEqual(dc.eventList[0].event_index, 0);
   assert.strictEqual(dc.eventList[1].event_index, 1);
   assert.strictEqual(dc.nextIndex, 2);
@@ -385,29 +396,29 @@ test('_internalEventAdd increments nextIndex', () => {
 test('_internalEventAdd truncates string properties to 32 characters', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   const longString = 'a'.repeat(50);
   dc.event({ kingdom: longString });
-  
+
   assert.strictEqual(dc.eventList[0].kingdom, 'a'.repeat(32));
 });
 
 test('_internalEventAdd handles object toString for string properties', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   const obj = { toString: () => 'object_string' };
   dc.event({ kingdom: obj as any });
-  
+
   assert.strictEqual(dc.eventList[0].kingdom, 'object_string');
 });
 
 test('_internalEventAdd converts and validates number properties', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   dc.event({ float1: '123.45' as any, float2: Infinity as any });
-  
+
   assert.strictEqual(dc.eventList[0].float1, 123.45);
   assert.strictEqual(dc.eventList[0].float2, undefined);
 });
@@ -415,7 +426,7 @@ test('_internalEventAdd converts and validates number properties', () => {
 test('log throws error when no arguments provided', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   assert.throws(() => {
     dc.log();
   }, /log must have arguments/);
@@ -424,9 +435,9 @@ test('log throws error when no arguments provided', () => {
 test('log handles string arguments', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   dc.log('test', 'message');
-  
+
   assert.strictEqual(dc.logList.length, 1);
   const logEvent = dc.logList[0];
   assert.strictEqual(logEvent.log_line, 'test message');
@@ -435,10 +446,10 @@ test('log handles string arguments', () => {
 test('log handles Error objects', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const error = new Error('test error');
   dc.log(error);
-  
+
   assert.strictEqual(dc.logList.length, 1);
   const logEvent = dc.logList[0];
   assert.ok(logEvent.log_line?.includes('test error'));
@@ -448,10 +459,10 @@ test('log handles Error objects', () => {
 test('log handles object arguments', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const obj = { key: 'value' };
   dc.log(obj);
-  
+
   assert.strictEqual(dc.logList.length, 1);
   const logEvent = dc.logList[0];
   assert.strictEqual(logEvent.log_line, '{"key":"value"}');
@@ -460,9 +471,9 @@ test('log handles object arguments', () => {
 test('log handles mixed argument types', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   dc.log('prefix', { key: 'value' }, 123);
-  
+
   assert.strictEqual(dc.logList.length, 1);
   const logEvent = dc.logList[0];
   assert.strictEqual(logEvent.log_line, 'prefix {"key":"value"} 123');
@@ -471,7 +482,7 @@ test('log handles mixed argument types', () => {
 test('logEvent throws error when props is not an object', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   assert.throws(() => {
     dc.logEvent(null as any);
   }, /props must be an object/);
@@ -480,9 +491,9 @@ test('logEvent throws error when props is not an object', () => {
 test('logEvent sets event_datetime if not provided', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   dc.logEvent({ log_line: 'test' });
-  
+
   assert.strictEqual(dc.logList.length, 1);
   const logEvent = dc.logList[0];
   assert.ok(logEvent.event_datetime);
@@ -491,10 +502,10 @@ test('logEvent sets event_datetime if not provided', () => {
 test('logEvent truncates string properties according to limits', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   const longString = 'a'.repeat(100);
   dc.logEvent({ hostname: longString });
-  
+
   assert.strictEqual(dc.logList.length, 1);
   const logEvent = dc.logList[0];
   assert.strictEqual(logEvent.hostname, 'a'.repeat(64)); // hostname limit is 64
@@ -503,9 +514,12 @@ test('logEvent truncates string properties according to limits', () => {
 test('logEvent handles number properties', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
-  dc.logEvent({ response_ms: '123.45' as any, response_bytes: Infinity as any });
-  
+
+  dc.logEvent({
+    response_ms: '123.45' as any,
+    response_bytes: Infinity as any,
+  });
+
   assert.strictEqual(dc.logList.length, 1);
   const logEvent = dc.logList[0];
   assert.strictEqual(logEvent.response_ms, 123.45);
@@ -515,26 +529,30 @@ test('logEvent handles number properties', () => {
 test('flush calls _sendEvents and _sendLogs', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   // Add some events and logs
   dc.event({ kingdom: 'test' });
   dc.log('test log');
-  
+
   // Mock the send methods to avoid actual HTTP requests
   let sendEventsCalled = false;
   let sendLogsCalled = false;
-  
+
   const originalSendEvents = dc._sendEvents;
   const originalSendLogs = dc._sendLogs;
-  
-  dc._sendEvents = function() { sendEventsCalled = true; };
-  dc._sendLogs = function() { sendLogsCalled = true; };
-  
+
+  dc._sendEvents = function () {
+    sendEventsCalled = true;
+  };
+  dc._sendLogs = function () {
+    sendLogsCalled = true;
+  };
+
   dc.flush();
-  
+
   assert.strictEqual(sendEventsCalled, true);
   assert.strictEqual(sendLogsCalled, true);
-  
+
   // Restore original methods
   dc._sendEvents = originalSendEvents;
   dc._sendLogs = originalSendLogs;
@@ -543,16 +561,16 @@ test('flush calls _sendEvents and _sendLogs', () => {
 test('_removeEvents removes events by event_index', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME, deviceTag: 'device123' });
-  
+
   dc.event({ kingdom: 'test1' });
   dc.event({ kingdom: 'test2' });
   dc.event({ kingdom: 'test3' });
-  
+
   assert.strictEqual(dc.eventList.length, 3);
-  
+
   // Remove the middle event
   dc._removeEvents([{ event_index: 1 } as any]);
-  
+
   assert.strictEqual(dc.eventList.length, 2);
   assert.strictEqual(dc.eventList[0].event_index, 0);
   assert.strictEqual(dc.eventList[1].event_index, 2);
@@ -561,16 +579,16 @@ test('_removeEvents removes events by event_index', () => {
 test('_removeLogs removes logs from beginning of array', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
-  
+
   dc.log('log1');
   dc.log('log2');
   dc.log('log3');
-  
+
   assert.strictEqual(dc.logList.length, 3);
-  
+
   // Remove first 2 logs
   dc._removeLogs([{}, {}] as any);
-  
+
   assert.strictEqual(dc.logList.length, 1);
   assert.strictEqual(dc.logList[0].log_line, 'log3');
 });

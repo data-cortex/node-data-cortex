@@ -10,39 +10,39 @@ const srcDir = join(__dirname, '..', 'src');
 async function getTestFiles(): Promise<string[]> {
   const files = await readdir(testDir);
   return files
-    .filter(file => file.endsWith('.test.ts') || file.endsWith('.test.js'))
-    .map(file => join(testDir, file));
+    .filter((file) => file.endsWith('.test.ts') || file.endsWith('.test.js'))
+    .map((file) => join(testDir, file));
 }
 
 async function getSrcFiles(): Promise<string[]> {
   const files = await readdir(srcDir);
   return files
-    .filter(file => file.endsWith('.ts'))
-    .map(file => join(srcDir, file));
+    .filter((file) => file.endsWith('.ts'))
+    .map((file) => join(srcDir, file));
 }
 
 async function runTests(): Promise<void> {
   console.log('🧪 Running comprehensive test suite for node-data-cortex\n');
-  
+
   const testFiles = await getTestFiles();
   const srcFiles = await getSrcFiles();
-  
+
   console.log(`📁 Found ${testFiles.length} test files:`);
-  testFiles.forEach(file => console.log(`   - ${file.split('/').pop()}`));
-  
+  testFiles.forEach((file) => console.log(`   - ${file.split('/').pop()}`));
+
   console.log(`\n📁 Testing ${srcFiles.length} source files:`);
-  srcFiles.forEach(file => console.log(`   - ${file.split('/').pop()}`));
-  
+  srcFiles.forEach((file) => console.log(`   - ${file.split('/').pop()}`));
+
   console.log('\n' + '='.repeat(60));
   console.log('🚀 Starting test execution...\n');
-  
+
   // Build the project first
   console.log('📦 Building project...');
   const buildProcess = spawn('npm', ['run', 'build'], {
     cwd: join(__dirname, '..'),
-    stdio: 'inherit'
+    stdio: 'inherit',
   });
-  
+
   await new Promise<void>((resolve, reject) => {
     buildProcess.on('close', (code) => {
       if (code === 0) {
@@ -54,7 +54,7 @@ async function runTests(): Promise<void> {
       }
     });
   });
-  
+
   // Run the main test file which imports all others
   console.log('🧪 Running all tests...');
   const testProcess = spawn('tsx', ['--test', join(testDir, 'test.ts')], {
@@ -62,10 +62,10 @@ async function runTests(): Promise<void> {
     stdio: 'inherit',
     env: {
       ...process.env,
-      NODE_OPTIONS: '--experimental-test-coverage'
-    }
+      NODE_OPTIONS: '--experimental-test-coverage',
+    },
   });
-  
+
   await new Promise<void>((resolve, reject) => {
     testProcess.on('close', (code) => {
       if (code === 0) {
@@ -77,15 +77,19 @@ async function runTests(): Promise<void> {
       }
     });
   });
-  
+
   // Run integration tests separately if API key is available
   if (process.env.DC_API_KEY) {
     console.log('\n🔗 Running integration tests...');
-    const integrationProcess = spawn('tsx', ['--test', join(testDir, 'integration.test.ts')], {
-      cwd: join(__dirname, '..'),
-      stdio: 'inherit'
-    });
-    
+    const integrationProcess = spawn(
+      'tsx',
+      ['--test', join(testDir, 'integration.test.ts')],
+      {
+        cwd: join(__dirname, '..'),
+        stdio: 'inherit',
+      }
+    );
+
     await new Promise<void>((resolve, reject) => {
       integrationProcess.on('close', (code) => {
         if (code === 0) {
@@ -99,18 +103,24 @@ async function runTests(): Promise<void> {
     });
   } else {
     console.log('\n⚠️  Integration tests skipped (DC_API_KEY not set)');
-    console.log('   Set DC_API_KEY environment variable to run integration tests');
+    console.log(
+      '   Set DC_API_KEY environment variable to run integration tests'
+    );
   }
-  
+
   console.log('\n' + '='.repeat(60));
   console.log('🎉 Test suite completed!');
   console.log('\n📊 Test Coverage Summary:');
-  console.log('   - DataCortex class: Constructor, init, all event methods, logging');
+  console.log(
+    '   - DataCortex class: Constructor, init, all event methods, logging'
+  );
   console.log('   - Middleware: Express integration, user agent parsing');
   console.log('   - Constants: All exported constants and their properties');
   console.log('   - Index: All exports and bound methods');
-  console.log('   - Integration: Full workflow with real API calls (if API key provided)');
-  
+  console.log(
+    '   - Integration: Full workflow with real API calls (if API key provided)'
+  );
+
   console.log('\n🔍 Areas covered:');
   console.log('   ✅ Input validation and error handling');
   console.log('   ✅ Data sanitization and truncation');

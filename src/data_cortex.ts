@@ -344,7 +344,10 @@ export class DataCortex {
     this._sendEvents();
     this._sendLogs();
   }
-  private _internalEventAdd(input_props: InternalEventProps, type: string): void {
+  private _internalEventAdd(
+    input_props: InternalEventProps,
+    type: string
+  ): void {
     if (!input_props.device_tag && !this.defaultBundle.device_tag) {
       throw new Error('device_tag is required');
     }
@@ -412,17 +415,22 @@ export class DataCortex {
         }
         return events.length < EVENT_SEND_COUNT;
       });
-      
+
       const firstEvent = events[0];
       if (!firstEvent) {
         this.isSending = false;
         return;
       }
-      
+
       const default_props = _pick(firstEvent, DEFAULT_BUNDLE_PROP_LIST);
-      const bundle: Bundle = Object.assign({}, this.defaultBundle, default_props, {
-        api_key: this.apiKey,
-      });
+      const bundle: Bundle = Object.assign(
+        {},
+        this.defaultBundle,
+        default_props,
+        {
+          api_key: this.apiKey,
+        }
+      );
       bundle.events = events.map((e) => _pick(e, EVENT_PROP_LIST));
 
       const current_time = encodeURIComponent(new Date().toISOString());
@@ -505,7 +513,10 @@ export class DataCortex {
     _objectEach(LOG_STRING_PROP_MAP, (max_len: number, p: string) => {
       if (p in props) {
         const val = props[p];
-        const s = val && typeof val === 'object' && 'toString' in val ? val.toString() : String(val);
+        const s =
+          val && typeof val === 'object' && 'toString' in val
+            ? val.toString()
+            : String(val);
         if (s && s !== 'undefined' && s !== 'null') {
           props[p] = s.slice(0, max_len);
         } else {
@@ -596,7 +607,10 @@ function _isError(e: unknown): e is Error {
     typeof (e as Error).message === 'string'
   );
 }
-function _defaultBundleEqual(a: InternalEventProps, b: InternalEventProps): boolean {
+function _defaultBundleEqual(
+  a: InternalEventProps,
+  b: InternalEventProps
+): boolean {
   return DEFAULT_BUNDLE_PROP_LIST.every((prop) => a[prop] === b[prop]);
 }
 function _errorLog(...args: unknown[]): void {
@@ -604,7 +618,10 @@ function _errorLog(...args: unknown[]): void {
   new_args.push(...args);
   console.error(...new_args);
 }
-function _pick(obj: Record<string, unknown>, prop_list: string[]): Record<string, unknown> {
+function _pick(
+  obj: Record<string, unknown>,
+  prop_list: string[]
+): Record<string, unknown> {
   const new_obj: Record<string, unknown> = {};
   prop_list.forEach((prop) => {
     const val = obj[prop];
@@ -614,7 +631,10 @@ function _pick(obj: Record<string, unknown>, prop_list: string[]): Record<string
   });
   return new_obj;
 }
-function _objectEach(object: Record<string, number>, callback: (value: number, key: string, object: Record<string, number>) => void): void {
+function _objectEach(
+  object: Record<string, number>,
+  callback: (value: number, key: string, object: Record<string, number>) => void
+): void {
   Object.keys(object).forEach((key) => {
     const value = object[key];
     if (value !== undefined) {

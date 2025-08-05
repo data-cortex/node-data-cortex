@@ -47,7 +47,12 @@ const NUMBER_PROP_LIST = [
     'float4',
     'spend_amount',
 ];
-const OTHER_PROP_LIST = ['type', 'event_index', 'event_datetime', 'to_list'];
+const OTHER_PROP_LIST = [
+    'type',
+    'event_index',
+    'event_datetime',
+    'to_list',
+];
 const DEFAULT_BUNDLE_PROP_LIST = [
     'app_ver',
     'server_ver',
@@ -65,8 +70,15 @@ const DEFAULT_BUNDLE_PROP_LIST = [
     'language',
     'group_tag',
 ];
-const EVENT_PROP_LIST = [...STRING_PROP_LIST, ...NUMBER_PROP_LIST, ...OTHER_PROP_LIST];
-const BUNDLE_PROP_LIST = [...EVENT_PROP_LIST, ...DEFAULT_BUNDLE_PROP_LIST];
+const EVENT_PROP_LIST = [
+    ...STRING_PROP_LIST,
+    ...NUMBER_PROP_LIST,
+    ...OTHER_PROP_LIST,
+];
+const BUNDLE_PROP_LIST = [
+    ...EVENT_PROP_LIST,
+    ...DEFAULT_BUNDLE_PROP_LIST,
+];
 const LOG_NUMBER_PROP_LIST = ['response_bytes', 'response_ms'];
 const LOG_STRING_PROP_MAP = {
     hostname: 64,
@@ -429,7 +441,9 @@ class DataCortex {
         _objectEach(LOG_STRING_PROP_MAP, (max_len, p) => {
             if (p in props) {
                 const val = props[p];
-                const s = val && typeof val === 'object' && 'toString' in val ? val.toString() : String(val);
+                const s = val && typeof val === 'object' && 'toString' in val
+                    ? val.toString()
+                    : String(val);
                 if (s && s !== 'undefined' && s !== 'null') {
                     props[p] = s.slice(0, max_len);
                 }

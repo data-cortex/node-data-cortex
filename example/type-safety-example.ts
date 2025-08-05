@@ -1,11 +1,10 @@
-import { 
-  DataCortex, 
-  create, 
-  InitOptions, 
-  EventProps, 
-  MessageSendProps, 
+import { DataCortex, create } from '../dist/index.js';
+import type {
+  InitOptions,
+  EventProps,
+  MessageSendProps,
   EconomyProps,
-  LogEventProps 
+  LogEventProps,
 } from '../dist/index.js';
 
 // Example of proper type usage
@@ -13,10 +12,10 @@ const dataCortex = create();
 
 // InitOptions with proper typing
 const initOptions: InitOptions = {
-  apiKey: 'your-api-key',
+  apiKey: process.env.DC_API_KEY,
   orgName: 'your-org',
   appVer: '1.0.0',
-  deviceTag: 'device-123'
+  deviceTag: 'device-123',
 };
 
 dataCortex.init(initOptions);
@@ -27,7 +26,7 @@ const eventData: EventProps = {
   phylum: 'action',
   class: 'shooter',
   float1: 123.45,
-  device_tag: 'device-123'
+  device_tag: 'device-123',
 };
 
 dataCortex.event(eventData);
@@ -38,7 +37,7 @@ const messageSendData: MessageSendProps = {
   from_tag: 'user-123',
   to_list: ['user-456', 'user-789'],
   kingdom: 'social',
-  float1: 1.0
+  float1: 1.0,
 };
 
 dataCortex.messageSend(messageSendData);
@@ -49,7 +48,7 @@ const economyData: EconomyProps = {
   spend_amount: 9.99,
   spend_type: 'purchase',
   kingdom: 'shop',
-  device_tag: 'device-123'
+  device_tag: 'device-123',
 };
 
 dataCortex.economy(economyData);
@@ -59,7 +58,7 @@ const logData: LogEventProps = {
   log_level: 'info',
   log_line: 'User completed tutorial',
   device_tag: 'device-123',
-  response_ms: 150
+  response_ms: 150,
 };
 
 dataCortex.logEvent(logData);
