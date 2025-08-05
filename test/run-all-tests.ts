@@ -57,13 +57,9 @@ async function runTests(): Promise<void> {
 
   // Run the main test file which imports all others
   console.log('🧪 Running all tests...');
-  const testProcess = spawn('tsx', ['--test', join(testDir, 'test.ts')], {
+  const testProcess = spawn('tsx', ['--test', '--experimental-test-coverage', join(testDir, 'test.ts')], {
     cwd: join(__dirname, '..'),
     stdio: 'inherit',
-    env: {
-      ...process.env,
-      NODE_OPTIONS: '--experimental-test-coverage',
-    },
   });
 
   await new Promise<void>((resolve, reject) => {
