@@ -1,0 +1,11 @@
+{
+  "tools": {
+    "git": {
+      "enabled": true,
+      "disabled_subcommands": ["commit", "push"]
+    },
+    "run_shell_command": {
+      "disabled_commands": ["git commit", "git push"]
+    }
+  }
+}
