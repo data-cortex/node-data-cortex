@@ -101,6 +101,7 @@ const LOG_OTHER_PROP_LIST = [
 ];
 const LOG_PROP_LIST = LOG_NUMBER_PROP_LIST.concat(Object.keys(LOG_STRING_PROP_MAP), LOG_OTHER_PROP_LIST);
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const { version } = require('../package.json');
 const UAS = `node-data-cortex/${version}`;
 const EVENT_SEND_COUNT = 10;
@@ -116,8 +117,6 @@ class DataCortex {
     apiKey;
     orgName;
     appVer;
-    serverVer;
-    userTag;
     eventList;
     nextIndex;
     delayCount;
@@ -136,8 +135,6 @@ class DataCortex {
         this.apiKey = false;
         this.orgName = false;
         this.appVer = '0';
-        this.serverVer = '';
-        this.userTag = false;
         this.eventList = [];
         this.nextIndex = 0;
         this.delayCount = 0;
@@ -151,7 +148,7 @@ class DataCortex {
     }
     init(opts, done) {
         if (!done) {
-            done = function () { };
+            done = () => { };
         }
         if (!opts || !opts.apiKey) {
             throw new Error('opts.apiKey is required');
@@ -162,7 +159,6 @@ class DataCortex {
         this.apiKey = opts.apiKey;
         this.orgName = opts.orgName;
         this.appVer = opts.appVer || '0';
-        this.serverVer = opts.serverVer || '';
         this.apiBaseUrl = opts.baseUrl || API_BASE_URL;
         this.defaultBundle = {
             app_ver: opts.appVer || '0',
@@ -265,13 +261,13 @@ class DataCortex {
         this._internalEventAdd(props, 'message_click');
     }
     economy(props) {
-        if (!props || typeof props != 'object') {
+        if (!props || typeof props !== 'object') {
             throw new Error('props must be an object');
         }
         if (!props.spend_currency) {
             throw new Error('spend_currency is required');
         }
-        if (typeof props.spend_amount != 'number') {
+        if (typeof props.spend_amount !== 'number') {
             throw new Error('spend_amount is required');
         }
         if (!isFinite(props.spend_amount)) {
@@ -310,16 +306,16 @@ class DataCortex {
         });
         NUMBER_PROP_LIST.forEach((p) => {
             if (p in props) {
-                let val = props[p];
+                const val = props[p];
                 let numVal;
-                if (typeof val != 'number') {
+                if (typeof val !== 'number') {
                     numVal = parseFloat(String(val));
                 }
                 else {
                     numVal = val;
                 }
                 if (!isFinite(numVal)) {
-                    delete props[p];
+                    props[p] = undefined;
                 }
                 else {
                     props[p] = numVal;
@@ -364,22 +360,18 @@ class DataCortex {
             });
             bundle.events = events.map((e) => _pick(e, EVENT_PROP_LIST));
             const current_time = encodeURIComponent(new Date().toISOString());
-            const url = this.apiBaseUrl +
-                '/' +
-                this.orgName +
-                '/1/track' +
-                '?current_time=' +
-                current_time;
+            const url = `${this.apiBaseUrl}/${this.orgName}/1/track` +
+                `?current_time=${current_time}`;
             _request({ url, body: bundle }, (err, body) => {
                 let remove = true;
-                if (err == 400) {
+                if (err === 400) {
                     _errorLog('Bad request, please check parameters, error:', body);
                 }
-                else if (err == 403) {
+                else if (err === 403) {
                     _errorLog('Bad API Key, error:', body);
                     this.isReady = false;
                 }
-                else if (err == 409) ;
+                else if (err === 409) ;
                 else if (err) {
                     remove = false;
                     this.delayCount++;
@@ -398,11 +390,7 @@ class DataCortex {
         }
     }
     _removeEvents(event_list) {
-        this.eventList = this.eventList.filter((e) => {
-            return !event_list.some((e2) => {
-                return e.event_index == e2.event_index;
-            });
-        });
+        this.eventList = this.eventList.filter((e) => !event_list.some((e2) => e.event_index === e2.event_index));
     }
     log(...args) {
         if (!args || args.length === 0) {
@@ -448,13 +436,13 @@ class DataCortex {
                     props[p] = s.slice(0, max_len);
                 }
                 else {
-                    delete props[p];
+                    props[p] = undefined;
                 }
             }
         });
         LOG_NUMBER_PROP_LIST.forEach((p) => {
             if (p in props) {
-                let val = props[p];
+                const val = props[p];
                 let numVal;
                 if (typeof val !== 'number') {
                     numVal = parseFloat(String(val));
@@ -466,7 +454,7 @@ class DataCortex {
                     props[p] = numVal;
                 }
                 else {
-                    delete props[p];
+                    props[p] = undefined;
                 }
             }
         });
@@ -493,7 +481,7 @@ class DataCortex {
                 app_ver: this.appVer,
                 events: this.logList.slice(0, LOG_SEND_COUNT),
             });
-            const url = this.apiBaseUrl + '/' + this.orgName + '/1/app_log';
+            const url = `${this.apiBaseUrl}/${this.orgName}/1/app_log`;
             _request({ url, body: bundle }, (err, body) => {
                 let remove = true;
                 if (err === 400) {
@@ -958,9 +946,11 @@ var onFinished = /*@__PURE__*/getDefaultExportFromCjs(onFinishedExports);
 
 function createLogger(params) {
     const { dataCortex, prepareEvent, logConsole } = params;
-    return function (req, res, next) {
+    return (req, res, next) => {
+        const expressReq = req;
+        const expressRes = res;
         const start_time = Date.now();
-        onFinished(res, function (err, res) {
+        onFinished(expressRes, (_err, res) => {
             const response_ms = Date.now() - start_time;
             const response_bytes = res.getHeader('content-length') || 0;
             const event_datetime = new Date();
@@ -969,18 +959,18 @@ function createLogger(params) {
                 response_ms,
                 response_bytes: typeof response_bytes === 'number' ? response_bytes : 0,
                 log_level: String(res.statusCode),
-                log_line: `${req.method} ${req.originalUrl} HTTP/${req.httpVersionMajor}.${req.httpVersionMinor}`,
+                log_line: `${expressReq.method} ${expressReq.originalUrl} HTTP/${expressReq.httpVersionMajor}.${expressReq.httpVersionMinor}`,
             };
-            if (req.ip) {
-                event.remote_address = req.ip;
+            if (expressReq.ip) {
+                event.remote_address = expressReq.ip;
             }
-            const referrer = req.get('referrer');
+            const referrer = expressReq.get('referrer');
             if (referrer) {
                 event.filename = referrer;
             }
-            const ua = req.get('user-agent');
+            const ua = expressReq.get('user-agent');
             _fillUserAgent(event, ua);
-            prepareEvent?.(req, res, event);
+            prepareEvent?.(expressReq, expressRes, event);
             dataCortex.logEvent(event);
             if (logConsole) {
                 console.log(`${event.remote_address} - - [${event_datetime.toUTCString()}] "${event.log_line}" ${event.log_level} ${event.response_ms}(ms) "${event.filename ?? ''}" "${ua ?? ''}"`);
@@ -992,105 +982,105 @@ function createLogger(params) {
 function _fillUserAgent(event, ua) {
     if (ua) {
         if (!event.os) {
-            if (ua.indexOf('Win') !== -1) {
+            if (ua.includes('Win')) {
                 event.os = 'windows';
                 event.os_ver = _regexGet(ua, /Windows NT ([^ ;)]*)/, 'unknown');
             }
-            else if (ua.indexOf('iPhone OS') !== -1) {
+            else if (ua.includes('iPhone OS')) {
                 event.os = 'ios';
                 event.os_ver = _regexGet(ua, /iPhone OS ([^ ;)]*)/, 'unknown');
                 event.os_ver = event.os_ver.replace(/_/g, '.');
             }
-            else if (ua.indexOf('iPad') !== -1) {
+            else if (ua.includes('iPad')) {
                 event.os = 'ios';
                 event.os_ver = _regexGet(ua, /CPU OS ([^ ;)]*)/, 'unknown');
                 event.os_ver = event.os_ver.replace(/_/g, '.');
             }
-            else if (ua.indexOf('Mac OS X') !== -1) {
+            else if (ua.includes('Mac OS X')) {
                 event.os = 'mac';
                 event.os_ver = _regexGet(ua, /Mac OS X ([^ ;)]*)/, 'unknown');
                 event.os_ver = event.os_ver.replace(/_/g, '.');
                 event.os_ver = event.os_ver.replace(/\.0$/, '');
             }
-            else if (ua.indexOf('Android') !== -1) {
+            else if (ua.includes('Android')) {
                 event.os = 'android';
                 event.os_ver = _regexGet(ua, /Android ([^ ;)]*)/, 'unknown');
                 event.os_ver = event.os_ver.replace(/_/g, '.');
             }
-            else if (ua.indexOf('Linux') !== -1) {
+            else if (ua.includes('Linux')) {
                 event.os = 'linux';
             }
-            else if (ua.indexOf('X11') !== -1) {
+            else if (ua.includes('X11')) {
                 event.os = 'unix';
             }
         }
         if (!event.browser) {
-            if (ua.indexOf('Edge') !== -1) {
+            if (ua.includes('Edge')) {
                 event.browser = 'edge';
                 event.browser_ver = _regexGet(ua, /Edge\/([^ ;)]*)/, 'unknown');
             }
-            else if (ua.indexOf('Chrome') !== -1) {
+            else if (ua.includes('Chrome')) {
                 event.browser = 'chrome';
                 event.browser_ver = _regexGet(ua, /Chrome\/([^ ;)]*)/, 'unknown');
             }
-            else if (ua.indexOf('CriOS') !== -1) {
+            else if (ua.includes('CriOS')) {
                 event.browser = 'chrome';
                 event.browser_ver = _regexGet(ua, /CriOS\/([^ ;)]*)/, 'unknown');
             }
-            else if (ua.indexOf('Firefox') !== -1) {
+            else if (ua.includes('Firefox')) {
                 event.browser = 'firefox';
                 event.browser_ver = _regexGet(ua, /Firefox\/([^ ;)]*)/, 'unknown');
             }
-            else if (ua.indexOf('Android') !== -1) {
+            else if (ua.includes('Android')) {
                 event.browser = 'android';
                 event.browser_ver = _regexGet(ua, /Version\/([^ ;)]*)/, 'unknown');
             }
-            else if (ua.indexOf('Safari') !== -1) {
+            else if (ua.includes('Safari')) {
                 event.browser = 'safari';
                 event.browser_ver = _regexGet(ua, /Version\/([^ ;)]*)/, 'unknown');
             }
-            else if (ua.indexOf('Trident') !== -1) {
+            else if (ua.includes('Trident')) {
                 event.browser = 'ie';
                 event.browser_ver = _regexGet(ua, /rv:([^ ;)]*)/, 'unknown');
             }
-            else if (ua.indexOf('MSIE') !== -1) {
+            else if (ua.includes('MSIE')) {
                 event.browser = 'ie';
                 event.browser_ver = _regexGet(ua, /MSIE ([^ ;)]*)/, 'unknown');
             }
-            else if (ua.indexOf('MessengerForiOS') !== -1) {
+            else if (ua.includes('MessengerForiOS')) {
                 event.browser = 'fbmessenger';
                 event.browser_ver = _regexGet(ua, /FBAV\/([^ ;)]*)/, 'unknown');
             }
-            else if (ua.indexOf('FB_IAB/MESSENGER') !== -1) {
+            else if (ua.includes('FB_IAB/MESSENGER')) {
                 event.browser = 'fbmessenger';
                 event.browser_ver = _regexGet(ua, /FBAV\/([^ ;)]*)/, 'unknown');
             }
         }
         if (!event.device_type) {
             event.device_type = 'desktop';
-            if (ua.indexOf('iPod') !== -1) {
+            if (ua.includes('iPod')) {
                 event.device_type = 'ipod';
             }
-            else if (ua.indexOf('iPhone') !== -1) {
+            else if (ua.includes('iPhone')) {
                 event.device_type = 'iphone';
             }
-            else if (ua.indexOf('iPad') !== -1) {
+            else if (ua.includes('iPad')) {
                 event.device_type = 'ipad';
             }
-            else if (ua.indexOf('Android') !== -1) {
-                if (ua.indexOf('Mobile') === -1) {
+            else if (ua.includes('Android')) {
+                if (!ua.includes('Mobile')) {
                     event.device_type = 'android_tablet';
                 }
                 else {
                     event.device_type = 'android';
                 }
             }
-            else if (ua.indexOf('Mobile') !== -1) {
+            else if (ua.includes('Mobile')) {
                 event.device_type = 'mobile';
             }
         }
-        if (!event.device_family) {
-            event.device_family = event.device_type || 'desktop';
+        if (!event['device_family']) {
+            event['device_family'] = event.device_type || 'desktop';
         }
     }
 }

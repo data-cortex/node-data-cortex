@@ -83,7 +83,7 @@ test('EVENT_PROP_LIST is combination of string, number, and other props', () => 
   assert.deepStrictEqual(EVENT_PROP_LIST, expectedProps);
   assert.strictEqual(
     EVENT_PROP_LIST.length,
-    STRING_PROP_LIST.length + NUMBER_PROP_LIST.length + OTHER_PROP_LIST.length
+    STRING_PROP_LIST.length + NUMBER_PROP_LIST.length + OTHER_PROP_LIST.length,
   );
 });
 
@@ -93,7 +93,7 @@ test('BUNDLE_PROP_LIST is combination of event and default bundle props', () => 
   assert.deepStrictEqual(BUNDLE_PROP_LIST, expectedProps);
   assert.strictEqual(
     BUNDLE_PROP_LIST.length,
-    EVENT_PROP_LIST.length + DEFAULT_BUNDLE_PROP_LIST.length
+    EVENT_PROP_LIST.length + DEFAULT_BUNDLE_PROP_LIST.length,
   );
 });
 
@@ -135,7 +135,7 @@ test('LOG_OTHER_PROP_LIST contains expected log other properties', () => {
 test('LOG_PROP_LIST is combination of log number, string, and other props', () => {
   const expectedProps = LOG_NUMBER_PROP_LIST.concat(
     Object.keys(LOG_STRING_PROP_MAP),
-    LOG_OTHER_PROP_LIST
+    LOG_OTHER_PROP_LIST,
   );
 
   assert.deepStrictEqual(LOG_PROP_LIST, expectedProps);
@@ -143,7 +143,7 @@ test('LOG_PROP_LIST is combination of log number, string, and other props', () =
     LOG_PROP_LIST.length,
     LOG_NUMBER_PROP_LIST.length +
       Object.keys(LOG_STRING_PROP_MAP).length +
-      LOG_OTHER_PROP_LIST.length
+      LOG_OTHER_PROP_LIST.length,
   );
 });
 
@@ -267,7 +267,7 @@ test('no overlap between STRING_PROP_LIST and NUMBER_PROP_LIST', () => {
     assert.strictEqual(
       numberSet.has(prop),
       false,
-      `Property ${prop} should not be in both string and number lists`
+      `Property ${prop} should not be in both string and number lists`,
     );
   });
 
@@ -275,7 +275,7 @@ test('no overlap between STRING_PROP_LIST and NUMBER_PROP_LIST', () => {
     assert.strictEqual(
       stringSet.has(prop),
       false,
-      `Property ${prop} should not be in both string and number lists`
+      `Property ${prop} should not be in both string and number lists`,
     );
   });
 });
@@ -288,7 +288,7 @@ test('no overlap between STRING_PROP_LIST and OTHER_PROP_LIST', () => {
     assert.strictEqual(
       otherSet.has(prop),
       false,
-      `Property ${prop} should not be in both string and other lists`
+      `Property ${prop} should not be in both string and other lists`,
     );
   });
 
@@ -296,7 +296,7 @@ test('no overlap between STRING_PROP_LIST and OTHER_PROP_LIST', () => {
     assert.strictEqual(
       stringSet.has(prop),
       false,
-      `Property ${prop} should not be in both string and other lists`
+      `Property ${prop} should not be in both string and other lists`,
     );
   });
 });
@@ -309,7 +309,7 @@ test('no overlap between NUMBER_PROP_LIST and OTHER_PROP_LIST', () => {
     assert.strictEqual(
       otherSet.has(prop),
       false,
-      `Property ${prop} should not be in both number and other lists`
+      `Property ${prop} should not be in both number and other lists`,
     );
   });
 
@@ -317,7 +317,7 @@ test('no overlap between NUMBER_PROP_LIST and OTHER_PROP_LIST', () => {
     assert.strictEqual(
       numberSet.has(prop),
       false,
-      `Property ${prop} should not be in both number and other lists`
+      `Property ${prop} should not be in both number and other lists`,
     );
   });
 });

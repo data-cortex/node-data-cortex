@@ -12,8 +12,6 @@ test('DataCortex constructor initializes with default values', () => {
   assert.strictEqual(dc.apiKey, false);
   assert.strictEqual(dc.orgName, false);
   assert.strictEqual(dc.appVer, '0');
-  assert.strictEqual(dc.serverVer, '');
-  assert.strictEqual(dc.userTag, false);
   assert.deepStrictEqual(dc.eventList, []);
   assert.strictEqual(dc.nextIndex, 0);
   assert.strictEqual(dc.delayCount, 0);
@@ -56,7 +54,6 @@ test('init sets basic properties correctly', () => {
   assert.strictEqual(dc.apiKey, API_KEY);
   assert.strictEqual(dc.orgName, ORG_NAME);
   assert.strictEqual(dc.appVer, '1.0.0');
-  assert.strictEqual(dc.serverVer, '2.0.0');
   assert.strictEqual(dc.isReady, true);
 });
 
@@ -119,7 +116,7 @@ test('init calls done callback when provided', (t, done) => {
     () => {
       assert.strictEqual(dc.isReady, true);
       done();
-    }
+    },
   );
 });
 

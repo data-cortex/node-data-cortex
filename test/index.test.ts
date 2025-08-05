@@ -40,7 +40,7 @@ test('exports bound setDeviceTag method', () => {
   dataCortex.setDeviceTag('test_device');
   assert.strictEqual(
     dataCortex.defaultObject.defaultBundle.device_tag,
-    'test_device'
+    'test_device',
   );
 });
 
@@ -51,7 +51,7 @@ test('exports bound setUserTag method', () => {
   dataCortex.setUserTag('test_user');
   assert.strictEqual(
     dataCortex.defaultObject.defaultBundle.user_tag,
-    'test_user'
+    'test_user',
   );
 });
 
@@ -109,7 +109,7 @@ test('exports bound dau method', () => {
   dataCortex.dau({ kingdom: 'test' });
 
   const events = dataCortex.defaultObject.eventList.filter(
-    (e) => e.type === 'dau'
+    (e) => e.type === 'dau',
   );
   assert.strictEqual(events.length, 1);
 });
@@ -125,7 +125,7 @@ test('exports bound event method', () => {
   dataCortex.event({ kingdom: 'test' });
 
   const events = dataCortex.defaultObject.eventList.filter(
-    (e) => e.type === 'event'
+    (e) => e.type === 'event',
   );
   assert.strictEqual(events.length, 1);
 });
@@ -141,7 +141,7 @@ test('exports bound economy method', () => {
   dataCortex.economy({ spend_currency: 'USD', spend_amount: 10.5 });
 
   const events = dataCortex.defaultObject.eventList.filter(
-    (e) => e.type === 'economy'
+    (e) => e.type === 'economy',
   );
   assert.strictEqual(events.length, 1);
   assert.strictEqual(events[0].spend_currency, 'USD');
@@ -163,7 +163,7 @@ test('exports bound messageSend method', () => {
   });
 
   const events = dataCortex.defaultObject.eventList.filter(
-    (e) => e.type === 'message_send'
+    (e) => e.type === 'message_send',
   );
   assert.strictEqual(events.length, 1);
 });
@@ -183,7 +183,7 @@ test('exports bound messageClick method', () => {
   });
 
   const events = dataCortex.defaultObject.eventList.filter(
-    (e) => e.type === 'message_click'
+    (e) => e.type === 'message_click',
   );
   assert.strictEqual(events.length, 1);
 });
@@ -261,7 +261,7 @@ test('bound methods work independently of defaultObject reference', () => {
   assert.strictEqual(dataCortex.defaultObject.eventList.length, 1);
   assert.strictEqual(
     dataCortex.defaultObject.eventList[0].kingdom,
-    'bound_test'
+    'bound_test',
   );
   assert.strictEqual(newInstance.eventList.length, 0);
 });

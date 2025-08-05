@@ -28,7 +28,7 @@ if (runIntegrationTests) {
         },
         () => {
           resolve();
-        }
+        },
       );
     });
 
@@ -85,7 +85,7 @@ if (runIntegrationTests) {
           hostname: 'integration-test-host',
           filename: 'middleware.test.ts',
         },
-        resolve
+        resolve,
       );
     });
 
@@ -135,7 +135,7 @@ if (runIntegrationTests) {
           orgName: ORG_NAME,
           deviceTag: 'error_test_device',
         },
-        resolve
+        resolve,
       );
     });
 
@@ -162,7 +162,7 @@ if (runIntegrationTests) {
 
     // Should have received an error about bad API key
     const hasApiKeyError = errorMessages.some(
-      (msg) => msg.includes('Bad API Key') || msg.includes('403')
+      (msg) => msg.includes('Bad API Key') || msg.includes('403'),
     );
 
     if (hasApiKeyError) {
@@ -184,7 +184,7 @@ if (runIntegrationTests) {
           orgName: ORG_NAME,
           deviceTag: 'batch_test_device',
         },
-        resolve
+        resolve,
       );
     });
 
@@ -219,7 +219,7 @@ if (runIntegrationTests) {
           orgName: ORG_NAME,
           hostname: 'batch-log-test',
         },
-        resolve
+        resolve,
       );
     });
 
@@ -242,7 +242,7 @@ if (runIntegrationTests) {
 } else {
   test('integration tests skipped - no API key', () => {
     console.log(
-      'Integration tests skipped because DC_API_KEY environment variable is not set'
+      'Integration tests skipped because DC_API_KEY environment variable is not set',
     );
     assert.ok(true);
   });
@@ -299,7 +299,7 @@ test('integration: concurrent operations', async () => {
   assert.strictEqual(
     dc.eventList.length,
     10,
-    `Expected 10 events, got ${dc.eventList.length}`
+    `Expected 10 events, got ${dc.eventList.length}`,
   );
 
   // Verify all events have unique indices
@@ -308,19 +308,19 @@ test('integration: concurrent operations', async () => {
   assert.strictEqual(
     indices.length,
     uniqueIndices.length,
-    'All events should have unique indices'
+    'All events should have unique indices',
   );
 
   // Verify all expected kingdoms are present
   const kingdoms = dc.eventList.map((e) => e.kingdom).sort();
   const expectedKingdoms = Array.from(
     { length: 10 },
-    (_, i) => `concurrent_${i}`
+    (_, i) => `concurrent_${i}`,
   ).sort();
   assert.deepStrictEqual(
     kingdoms,
     expectedKingdoms,
-    'All expected kingdoms should be present'
+    'All expected kingdoms should be present',
   );
 
   // Test that indices are sequential
@@ -329,7 +329,7 @@ test('integration: concurrent operations', async () => {
     assert.strictEqual(
       sortedIndices[i],
       sortedIndices[i - 1] + 1,
-      'Indices should be sequential'
+      'Indices should be sequential',
     );
   }
 });

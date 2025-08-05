@@ -1,21 +1,53 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    "target": "ES2022",
     "module": "ESNext",
-    "lib": ["es2020"],
+    "lib": ["ES2022", "DOM"],
     "declaration": false,
     "outDir": "./dist",
+
+    // Strict Type-Checking Options
     "strict": true,
     "noImplicitAny": true,
-    "noImplicitReturns": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
     "noImplicitThis": true,
-    "noImplicitOverride": true,
-    "noUncheckedIndexedAccess": true,
+    "useUnknownInCatchVariables": true,
+    "alwaysStrict": true,
     "exactOptionalPropertyTypes": true,
+    "noImplicitOverride": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+
+    // Additional Checks
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+
+    // Module Resolution Options
+    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
     "esModuleInterop": true,
-    "moduleResolution": "node"
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+
+    // Emit Options
+    "noEmitOnError": true,
+    "preserveConstEnums": true,
+    "removeComments": false,
+    "sourceMap": false,
+
+    // Interop Constraints
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": false
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "test"]
 }

@@ -74,7 +74,7 @@ dataCortex.log(
   1,
   'foo',
   new Date(),
-  new Error()
+  new Error(),
 );
 
 dataCortex.logEvent({

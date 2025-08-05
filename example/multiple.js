@@ -9,7 +9,7 @@ const apiKey = process.argv[2];
 const apiKey2 = process.argv[3];
 if (!apiKey || !apiKey2) {
   console.log(
-    'Usage: ' + path.basename(process.argv[1]) + ' <api_key> <api_key>'
+    'Usage: ' + path.basename(process.argv[1]) + ' <api_key> <api_key>',
   );
   process.exit(-1);
 }

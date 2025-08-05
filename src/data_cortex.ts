@@ -1,19 +1,20 @@
 import * as https from 'node:https';
 import * as os from 'node:os';
+
 import {
   STRING_PROP_LIST,
   NUMBER_PROP_LIST,
-  OTHER_PROP_LIST,
   DEFAULT_BUNDLE_PROP_LIST,
   EVENT_PROP_LIST,
   BUNDLE_PROP_LIST,
   LOG_NUMBER_PROP_LIST,
   LOG_STRING_PROP_MAP,
-  LOG_OTHER_PROP_LIST,
   LOG_PROP_LIST,
 } from './constants';
 
-const { version } = require('../package.json');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { version } = require('../package.json') as { version: string };
+
 const UAS = `node-data-cortex/${version}`;
 
 const EVENT_SEND_COUNT = 10;
@@ -158,9 +159,10 @@ interface RequestParams {
   body: Bundle | LogBundle;
 }
 
-interface RequestCallback {
-  (err: number | string | Error | null, body?: string): void;
-}
+type RequestCallback = (
+  err: number | string | Error | null,
+  body?: string,
+) => void;
 
 export class DataCortex {
   private apiBaseUrl: string;
@@ -170,8 +172,6 @@ export class DataCortex {
   private apiKey: string | false;
   private orgName: string | false;
   private appVer: string;
-  private serverVer: string;
-  private userTag: boolean;
   private eventList: InternalEventProps[];
   private nextIndex: number;
   private delayCount: number;
@@ -181,7 +181,7 @@ export class DataCortex {
   private isLogSending: boolean;
   private logDelayCount: number;
   private defaultLogBundle: Partial<LogBundle>;
-  private hasHupHandler: boolean = false;
+  private hasHupHandler = false;
 
   constructor() {
     this.apiBaseUrl = API_BASE_URL;
@@ -191,8 +191,6 @@ export class DataCortex {
     this.apiKey = false;
     this.orgName = false;
     this.appVer = '0';
-    this.serverVer = '';
-    this.userTag = false;
     this.eventList = [];
     this.nextIndex = 0;
     this.delayCount = 0;
@@ -209,7 +207,7 @@ export class DataCortex {
 
   public init(opts: InitOptions, done?: () => void): void {
     if (!done) {
-      done = function () {};
+      done = (): void => {};
     }
     if (!opts || !opts.apiKey) {
       throw new Error('opts.apiKey is required');
@@ -221,7 +219,6 @@ export class DataCortex {
     this.apiKey = opts.apiKey;
     this.orgName = opts.orgName;
     this.appVer = opts.appVer || '0';
-    this.serverVer = opts.serverVer || '';
 
     this.apiBaseUrl = opts.baseUrl || API_BASE_URL;
 
@@ -326,13 +323,13 @@ export class DataCortex {
     this._internalEventAdd(props, 'message_click');
   }
   public economy(props: EconomyProps): void {
-    if (!props || typeof props != 'object') {
+    if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
     if (!props.spend_currency) {
       throw new Error('spend_currency is required');
     }
-    if (typeof props.spend_amount != 'number') {
+    if (typeof props.spend_amount !== 'number') {
       throw new Error('spend_amount is required');
     }
     if (!isFinite(props.spend_amount)) {
@@ -346,7 +343,7 @@ export class DataCortex {
   }
   private _internalEventAdd(
     input_props: InternalEventProps,
-    type: string
+    type: string,
   ): void {
     if (!input_props.device_tag && !this.defaultBundle.device_tag) {
       throw new Error('device_tag is required');
@@ -374,15 +371,15 @@ export class DataCortex {
     });
     NUMBER_PROP_LIST.forEach((p) => {
       if (p in props) {
-        let val = props[p];
+        const val = props[p];
         let numVal: number;
-        if (typeof val != 'number') {
+        if (typeof val !== 'number') {
           numVal = parseFloat(String(val));
         } else {
           numVal = val;
         }
         if (!isFinite(numVal)) {
-          delete props[p];
+          (props as Record<string, unknown>)[p] = undefined;
         } else {
           props[p] = numVal;
         }
@@ -429,27 +426,23 @@ export class DataCortex {
         default_props,
         {
           api_key: this.apiKey,
-        }
+        },
       );
       bundle.events = events.map((e) => _pick(e, EVENT_PROP_LIST));
 
       const current_time = encodeURIComponent(new Date().toISOString());
       const url =
-        this.apiBaseUrl +
-        '/' +
-        this.orgName +
-        '/1/track' +
-        '?current_time=' +
-        current_time;
+        `${this.apiBaseUrl}/${this.orgName}/1/track` +
+        `?current_time=${current_time}`;
 
       _request({ url, body: bundle }, (err, body) => {
         let remove = true;
-        if (err == 400) {
+        if (err === 400) {
           _errorLog('Bad request, please check parameters, error:', body);
-        } else if (err == 403) {
+        } else if (err === 403) {
           _errorLog('Bad API Key, error:', body);
           this.isReady = false;
-        } else if (err == 409) {
+        } else if (err === 409) {
           // Dup send?
         } else if (err) {
           remove = false;
@@ -470,11 +463,9 @@ export class DataCortex {
     }
   }
   private _removeEvents(event_list: InternalEventProps[]): void {
-    this.eventList = this.eventList.filter((e) => {
-      return !event_list.some((e2) => {
-        return e.event_index == e2.event_index;
-      });
-    });
+    this.eventList = this.eventList.filter(
+      (e) => !event_list.some((e2) => e.event_index === e2.event_index),
+    );
   }
   public log(...args: unknown[]): void {
     if (!args || args.length === 0) {
@@ -520,13 +511,13 @@ export class DataCortex {
         if (s && s !== 'undefined' && s !== 'null') {
           props[p] = s.slice(0, max_len);
         } else {
-          delete props[p];
+          (props as Record<string, unknown>)[p] = undefined;
         }
       }
     });
     LOG_NUMBER_PROP_LIST.forEach((p) => {
       if (p in props) {
-        let val = props[p];
+        const val = props[p];
         let numVal: number;
         if (typeof val !== 'number') {
           numVal = parseFloat(String(val));
@@ -536,7 +527,7 @@ export class DataCortex {
         if (isFinite(numVal)) {
           props[p] = numVal;
         } else {
-          delete props[p];
+          (props as Record<string, unknown>)[p] = undefined;
         }
       }
     });
@@ -568,9 +559,9 @@ export class DataCortex {
           api_key: this.apiKey,
           app_ver: this.appVer,
           events: this.logList.slice(0, LOG_SEND_COUNT),
-        }
+        },
       );
-      const url = this.apiBaseUrl + '/' + this.orgName + '/1/app_log';
+      const url = `${this.apiBaseUrl}/${this.orgName}/1/app_log`;
       _request({ url, body: bundle }, (err, body) => {
         let remove = true;
         if (err === 400) {
@@ -609,7 +600,7 @@ function _isError(e: unknown): e is Error {
 }
 function _defaultBundleEqual(
   a: InternalEventProps,
-  b: InternalEventProps
+  b: InternalEventProps,
 ): boolean {
   return DEFAULT_BUNDLE_PROP_LIST.every((prop) => a[prop] === b[prop]);
 }
@@ -620,7 +611,7 @@ function _errorLog(...args: unknown[]): void {
 }
 function _pick(
   obj: Record<string, unknown>,
-  prop_list: string[]
+  prop_list: string[],
 ): Record<string, unknown> {
   const new_obj: Record<string, unknown> = {};
   prop_list.forEach((prop) => {
@@ -633,7 +624,11 @@ function _pick(
 }
 function _objectEach(
   object: Record<string, number>,
-  callback: (value: number, key: string, object: Record<string, number>) => void
+  callback: (
+    value: number,
+    key: string,
+    object: Record<string, number>,
+  ) => void,
 ): void {
   Object.keys(object).forEach((key) => {
     const value = object[key];

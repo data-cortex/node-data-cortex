@@ -79,8 +79,6 @@ declare class DataCortex {
     private apiKey;
     private orgName;
     private appVer;
-    private serverVer;
-    private userTag;
     private eventList;
     private nextIndex;
     private delayCount;

@@ -57,10 +57,14 @@ async function runTests(): Promise<void> {
 
   // Run the main test file which imports all others
   console.log('🧪 Running all tests...');
-  const testProcess = spawn('tsx', ['--test', '--experimental-test-coverage', join(testDir, 'test.ts')], {
-    cwd: join(__dirname, '..'),
-    stdio: 'inherit',
-  });
+  const testProcess = spawn(
+    'tsx',
+    ['--test', '--experimental-test-coverage', join(testDir, 'test.ts')],
+    {
+      cwd: join(__dirname, '..'),
+      stdio: 'inherit',
+    },
+  );
 
   await new Promise<void>((resolve, reject) => {
     testProcess.on('close', (code) => {
@@ -83,7 +87,7 @@ async function runTests(): Promise<void> {
       {
         cwd: join(__dirname, '..'),
         stdio: 'inherit',
-      }
+      },
     );
 
     await new Promise<void>((resolve, reject) => {
@@ -100,7 +104,7 @@ async function runTests(): Promise<void> {
   } else {
     console.log('\n⚠️  Integration tests skipped (DC_API_KEY not set)');
     console.log(
-      '   Set DC_API_KEY environment variable to run integration tests'
+      '   Set DC_API_KEY environment variable to run integration tests',
     );
   }
 
@@ -108,13 +112,13 @@ async function runTests(): Promise<void> {
   console.log('🎉 Test suite completed!');
   console.log('\n📊 Test Coverage Summary:');
   console.log(
-    '   - DataCortex class: Constructor, init, all event methods, logging'
+    '   - DataCortex class: Constructor, init, all event methods, logging',
   );
   console.log('   - Middleware: Express integration, user agent parsing');
   console.log('   - Constants: All exported constants and their properties');
   console.log('   - Index: All exports and bound methods');
   console.log(
-    '   - Integration: Full workflow with real API calls (if API key provided)'
+    '   - Integration: Full workflow with real API calls (if API key provided)',
   );
 
   console.log('\n🔍 Areas covered:');

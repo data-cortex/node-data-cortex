@@ -77,5 +77,5 @@ export const LOG_OTHER_PROP_LIST = [
 
 export const LOG_PROP_LIST = LOG_NUMBER_PROP_LIST.concat(
   Object.keys(LOG_STRING_PROP_MAP),
-  LOG_OTHER_PROP_LIST
+  LOG_OTHER_PROP_LIST,
 );
