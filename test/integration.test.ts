@@ -334,3 +334,501 @@ test('integration: memory management', () => {
   assert.strictEqual(dc.eventList.length, 500);
   assert.strictEqual(dc.logList.length, 500);
 });
+
+// Min and Max argument tests for DataCortex methods
+test('min/max arguments: event method', async () => {
+  let errorLogs: string[] = [];
+  let apiKeyErrors = 0;
+  const mockErrorLog = (...args: unknown[]) => {
+    const message = args.join(' ');
+    errorLogs.push(message);
+    if (message.includes('Bad API Key')) {
+      apiKeyErrors++;
+    }
+  };
+
+  const dc = create();
+  dc.init({
+    apiKey: 'test_key',
+    orgName: ORG_NAME,
+    deviceTag: 'test_device',
+    errorLog: mockErrorLog,
+  });
+
+  // Min test - only required arguments (kingdom is not required, but we need at least one property)
+  dc.event({ kingdom: 'test' });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  // We expect API key errors since we're using a test key, but no other errors
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Min test should not produce non-API-key error logs',
+  );
+
+  // Reset error logs for max test
+  errorLogs = [];
+  apiKeyErrors = 0;
+
+  // Max test - all possible arguments
+  dc.event({
+    kingdom: 'test_kingdom',
+    phylum: 'test_phylum',
+    class: 'test_class',
+    order: 'test_order',
+    family: 'test_family',
+    genus: 'test_genus',
+    species: 'test_species',
+    channel: 'test_channel',
+    float1: 1.1,
+    float2: 2.2,
+    float3: 3.3,
+    float4: 4.4,
+    event_datetime: new Date(),
+    device_tag: 'test_device_override',
+    user_tag: 'test_user_override',
+  });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Max test should not produce non-API-key error logs',
+  );
+});
+
+test('min/max arguments: install method', async () => {
+  let errorLogs: string[] = [];
+  let apiKeyErrors = 0;
+  const mockErrorLog = (...args: unknown[]) => {
+    const message = args.join(' ');
+    errorLogs.push(message);
+    if (message.includes('Bad API Key')) {
+      apiKeyErrors++;
+    }
+  };
+
+  const dc = create();
+  dc.init({
+    apiKey: 'test_key',
+    orgName: ORG_NAME,
+    deviceTag: 'test_device',
+    errorLog: mockErrorLog,
+  });
+
+  // Min test - only required arguments
+  dc.install({ kingdom: 'test' });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Min test should not produce non-API-key error logs',
+  );
+
+  // Reset error logs for max test
+  errorLogs = [];
+  apiKeyErrors = 0;
+
+  // Max test - all possible arguments
+  dc.install({
+    kingdom: 'install_kingdom',
+    phylum: 'install_phylum',
+    class: 'install_class',
+    order: 'install_order',
+    family: 'install_family',
+    genus: 'install_genus',
+    species: 'install_species',
+    channel: 'install_channel',
+    float1: 10.1,
+    float2: 20.2,
+    float3: 30.3,
+    float4: 40.4,
+    event_datetime: new Date(),
+    device_tag: 'install_device_override',
+    user_tag: 'install_user_override',
+  });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Max test should not produce non-API-key error logs',
+  );
+});
+
+test('min/max arguments: dau method', async () => {
+  let errorLogs: string[] = [];
+  let apiKeyErrors = 0;
+  const mockErrorLog = (...args: unknown[]) => {
+    const message = args.join(' ');
+    errorLogs.push(message);
+    if (message.includes('Bad API Key')) {
+      apiKeyErrors++;
+    }
+  };
+
+  const dc = create();
+  dc.init({
+    apiKey: 'test_key',
+    orgName: ORG_NAME,
+    deviceTag: 'test_device',
+    errorLog: mockErrorLog,
+  });
+
+  // Min test - only required arguments
+  dc.dau({ kingdom: 'test' });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Min test should not produce non-API-key error logs',
+  );
+
+  // Reset error logs for max test
+  errorLogs = [];
+  apiKeyErrors = 0;
+
+  // Max test - all possible arguments
+  dc.dau({
+    kingdom: 'dau_kingdom',
+    phylum: 'dau_phylum',
+    class: 'dau_class',
+    order: 'dau_order',
+    family: 'dau_family',
+    genus: 'dau_genus',
+    species: 'dau_species',
+    channel: 'dau_channel',
+    float1: 100.1,
+    float2: 200.2,
+    float3: 300.3,
+    float4: 400.4,
+    event_datetime: new Date(),
+    device_tag: 'dau_device_override',
+    user_tag: 'dau_user_override',
+  });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Max test should not produce non-API-key error logs',
+  );
+});
+
+test('min/max arguments: economy method', async () => {
+  let errorLogs: string[] = [];
+  let apiKeyErrors = 0;
+  const mockErrorLog = (...args: unknown[]) => {
+    const message = args.join(' ');
+    errorLogs.push(message);
+    if (message.includes('Bad API Key')) {
+      apiKeyErrors++;
+    }
+  };
+
+  const dc = create();
+  dc.init({
+    apiKey: 'test_key',
+    orgName: ORG_NAME,
+    deviceTag: 'test_device',
+    errorLog: mockErrorLog,
+  });
+
+  // Min test - only required arguments
+  dc.economy({
+    spend_currency: 'USD',
+    spend_amount: 9.99,
+  });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Min test should not produce non-API-key error logs',
+  );
+
+  // Reset error logs for max test
+  errorLogs = [];
+  apiKeyErrors = 0;
+
+  // Max test - all possible arguments
+  dc.economy({
+    spend_currency: 'EUR',
+    spend_amount: 19.99,
+    spend_type: 'premium_upgrade',
+    kingdom: 'economy_kingdom',
+    phylum: 'economy_phylum',
+    class: 'economy_class',
+    order: 'economy_order',
+    family: 'economy_family',
+    genus: 'economy_genus',
+    species: 'economy_species',
+    channel: 'economy_channel',
+    float1: 1000.1,
+    float2: 2000.2,
+    float3: 3000.3,
+    float4: 4000.4,
+    event_datetime: new Date(),
+    device_tag: 'economy_device_override',
+    user_tag: 'economy_user_override',
+  });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Max test should not produce non-API-key error logs',
+  );
+});
+
+test('min/max arguments: messageSend method', async () => {
+  let errorLogs: string[] = [];
+  let apiKeyErrors = 0;
+  const mockErrorLog = (...args: unknown[]) => {
+    const message = args.join(' ');
+    errorLogs.push(message);
+    if (message.includes('Bad API Key')) {
+      apiKeyErrors++;
+    }
+  };
+
+  const dc = create();
+  dc.init({
+    apiKey: 'test_key',
+    orgName: ORG_NAME,
+    deviceTag: 'test_device',
+    errorLog: mockErrorLog,
+  });
+
+  // Min test - only required arguments
+  dc.messageSend({
+    network: 'test_network',
+    from_tag: 'sender123',
+    to_list: ['recipient1', 'recipient2'],
+  });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Min test should not produce non-API-key error logs',
+  );
+
+  // Reset error logs for max test
+  errorLogs = [];
+  apiKeyErrors = 0;
+
+  // Max test - all possible arguments
+  dc.messageSend({
+    network: 'premium_network',
+    from_tag: 'premium_sender',
+    to_list: ['recipient1', 'recipient2', 'recipient3'],
+    kingdom: 'message_kingdom',
+    phylum: 'message_phylum',
+    class: 'message_class',
+    order: 'message_order',
+    family: 'message_family',
+    genus: 'message_genus',
+    species: 'message_species',
+    channel: 'message_channel',
+    float1: 10000.1,
+    float2: 20000.2,
+    float3: 30000.3,
+    float4: 40000.4,
+    event_datetime: new Date(),
+    device_tag: 'message_device_override',
+    user_tag: 'message_user_override',
+  });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Max test should not produce non-API-key error logs',
+  );
+});
+
+test('min/max arguments: messageClick method', async () => {
+  let errorLogs: string[] = [];
+  let apiKeyErrors = 0;
+  const mockErrorLog = (...args: unknown[]) => {
+    const message = args.join(' ');
+    errorLogs.push(message);
+    if (message.includes('Bad API Key')) {
+      apiKeyErrors++;
+    }
+  };
+
+  const dc = create();
+  dc.init({
+    apiKey: 'test_key',
+    orgName: ORG_NAME,
+    deviceTag: 'test_device',
+    errorLog: mockErrorLog,
+  });
+
+  // Min test - only required arguments
+  dc.messageClick({
+    network: 'test_network',
+    from_tag: 'sender123',
+    to_tag: 'recipient123',
+  });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Min test should not produce non-API-key error logs',
+  );
+
+  // Reset error logs for max test
+  errorLogs = [];
+  apiKeyErrors = 0;
+
+  // Max test - all possible arguments
+  dc.messageClick({
+    network: 'premium_network',
+    from_tag: 'premium_sender',
+    to_tag: 'premium_recipient',
+    kingdom: 'click_kingdom',
+    phylum: 'click_phylum',
+    class: 'click_class',
+    order: 'click_order',
+    family: 'click_family',
+    genus: 'click_genus',
+    species: 'click_species',
+    channel: 'click_channel',
+    float1: 100000.1,
+    float2: 200000.2,
+    float3: 300000.3,
+    float4: 400000.4,
+    event_datetime: new Date(),
+    device_tag: 'click_device_override',
+    user_tag: 'click_user_override',
+  });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Max test should not produce non-API-key error logs',
+  );
+});
+
+test('min/max arguments: log method', async () => {
+  let errorLogs: string[] = [];
+  let apiKeyErrors = 0;
+  const mockErrorLog = (...args: unknown[]) => {
+    const message = args.join(' ');
+    errorLogs.push(message);
+    if (message.includes('Bad API Key')) {
+      apiKeyErrors++;
+    }
+  };
+
+  const dc = create();
+  dc.init({
+    apiKey: 'test_key',
+    orgName: ORG_NAME,
+    deviceTag: 'test_device',
+    errorLog: mockErrorLog,
+  });
+
+  // Min test - only required arguments
+  dc.log('Simple log message');
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Min test should not produce non-API-key error logs',
+  );
+
+  // Reset error logs for max test
+  errorLogs = [];
+  apiKeyErrors = 0;
+
+  // Max test - multiple arguments of different types
+  dc.log(
+    'Complex log message',
+    { key: 'value' },
+    42,
+    true,
+    new Error('test error'),
+  );
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Max test should not produce non-API-key error logs',
+  );
+});
+
+test('min/max arguments: logEvent method', async () => {
+  let errorLogs: string[] = [];
+  let apiKeyErrors = 0;
+  const mockErrorLog = (...args: unknown[]) => {
+    const message = args.join(' ');
+    errorLogs.push(message);
+    if (message.includes('Bad API Key')) {
+      apiKeyErrors++;
+    }
+  };
+
+  const dc = create();
+  dc.init({
+    apiKey: 'test_key',
+    orgName: ORG_NAME,
+    deviceTag: 'test_device',
+    hostname: 'test_hostname',
+    filename: 'test_filename',
+    errorLog: mockErrorLog,
+  });
+
+  // Min test - only required arguments (log_line is effectively required)
+  dc.logEvent({
+    log_line: 'Minimal log event',
+  });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Min test should not produce non-API-key error logs',
+  );
+
+  // Reset error logs for max test
+  errorLogs = [];
+  apiKeyErrors = 0;
+
+  // Max test - all possible arguments
+  dc.logEvent({
+    event_datetime: new Date(),
+    response_bytes: 1024,
+    response_ms: 250,
+    hostname: 'custom_hostname',
+    filename: 'custom_filename.js',
+    log_level: 'INFO',
+    device_tag: 'custom_device_tag',
+    user_tag: 'custom_user_tag',
+    remote_address: '192.168.1.100',
+    log_line: 'Maximum log event with all properties',
+    device_type: 'mobile',
+    os: 'iOS',
+    os_ver: '15.0',
+    browser: 'Safari',
+    browser_ver: '15.0',
+    country: 'US',
+    language: 'en',
+  });
+  dc.flush();
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  assert.strictEqual(
+    errorLogs.length - apiKeyErrors,
+    0,
+    'Max test should not produce non-API-key error logs',
+  );
+});
