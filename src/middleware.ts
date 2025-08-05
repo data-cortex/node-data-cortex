@@ -7,7 +7,8 @@ export default { createLogger };
 
 export interface CreateLoggerParams {
   dataCortex: DataCortex;
-  prepareEvent?: (req: unknown, res: unknown, event: LogEventProps) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  prepareEvent?: (req: any, res: any, event: LogEventProps) => void;
   logConsole?: boolean;
 }
 type CreateLoggerResult = (

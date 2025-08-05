@@ -116,7 +116,7 @@ declare function create(): DataCortex;
 
 interface CreateLoggerParams {
     dataCortex: DataCortex;
-    prepareEvent?: (req: unknown, res: unknown, event: LogEventProps) => void;
+    prepareEvent?: (req: any, res: any, event: LogEventProps) => void;
     logConsole?: boolean;
 }
 type CreateLoggerResult = (req: unknown, res: unknown, next: () => void) => void;
