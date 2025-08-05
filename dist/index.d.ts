@@ -90,7 +90,7 @@ declare class DataCortex {
     private defaultLogBundle;
     private hasHupHandler;
     constructor();
-    init(opts: InitOptions, done?: () => void): void;
+    init(opts: InitOptions): void;
     setDeviceTag(tag: string): void;
     setUserTag(tag: string): void;
     install(props: InstallProps): void;
@@ -121,7 +121,7 @@ type CreateLoggerResult = (req: unknown, res: unknown, next: () => void) => void
 declare function createLogger(params: CreateLoggerParams): CreateLoggerResult;
 
 declare const defaultObject: DataCortex;
-declare const init: (opts: InitOptions, done?: () => void) => void;
+declare const init: (opts: InitOptions) => void;
 declare const setDeviceTag: (tag: string) => void;
 declare const setUserTag: (tag: string) => void;
 declare const flush: () => void;
@@ -135,7 +135,7 @@ declare const log: (...args: unknown[]) => void;
 declare const logEvent: (props: LogEventProps) => void;
 declare const _default: {
     defaultObject: DataCortex;
-    init: (opts: InitOptions, done?: () => void) => void;
+    init: (opts: InitOptions) => void;
     setDeviceTag: (tag: string) => void;
     setUserTag: (tag: string) => void;
     flush: () => void;

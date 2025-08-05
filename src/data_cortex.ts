@@ -205,10 +205,7 @@ export class DataCortex {
     return this;
   }
 
-  public init(opts: InitOptions, done?: () => void): void {
-    if (!done) {
-      done = (): void => {};
-    }
+  public init(opts: InitOptions): void {
     if (!opts || !opts.apiKey) {
       throw new Error('opts.apiKey is required');
     }
@@ -257,7 +254,6 @@ export class DataCortex {
     }
 
     this.isReady = true;
-    done();
   }
 
   public setDeviceTag(tag: string): void {

@@ -146,10 +146,7 @@ class DataCortex {
         this.defaultLogBundle = {};
         return this;
     }
-    init(opts, done) {
-        if (!done) {
-            done = () => { };
-        }
+    init(opts) {
         if (!opts || !opts.apiKey) {
             throw new Error('opts.apiKey is required');
         }
@@ -194,7 +191,6 @@ class DataCortex {
             process.on('SIGHUP', () => this.flush());
         }
         this.isReady = true;
-        done();
     }
     setDeviceTag(tag) {
         if (tag) {

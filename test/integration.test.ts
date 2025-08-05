@@ -12,24 +12,17 @@ if (runIntegrationTests) {
   test('integration: full event workflow', async (t) => {
     const dc = create();
 
-    await new Promise<void>((resolve, reject) => {
-      dc.init(
-        {
-          apiKey: API_KEY!,
-          orgName: ORG_NAME,
-          appVer: '1.0.0',
-          deviceTag: 'integration_test_device',
-          userTag: 'integration_test_user',
-          deviceType: 'test',
-          os: 'test_os',
-          osVer: '1.0',
-          language: 'en',
-          country: 'US',
-        },
-        () => {
-          resolve();
-        },
-      );
+    dc.init({
+      apiKey: API_KEY!,
+      orgName: ORG_NAME,
+      appVer: '1.0.0',
+      deviceTag: 'integration_test_device',
+      userTag: 'integration_test_user',
+      deviceType: 'test',
+      os: 'test_os',
+      osVer: '1.0',
+      language: 'en',
+      country: 'US',
     });
 
     assert.strictEqual(dc.isReady, true);
@@ -77,16 +70,11 @@ if (runIntegrationTests) {
   test('integration: middleware workflow', async (t) => {
     const dc = create();
 
-    await new Promise<void>((resolve) => {
-      dc.init(
-        {
-          apiKey: API_KEY!,
-          orgName: ORG_NAME,
-          hostname: 'integration-test-host',
-          filename: 'middleware.test.ts',
-        },
-        resolve,
-      );
+    dc.init({
+      apiKey: API_KEY!,
+      orgName: ORG_NAME,
+      hostname: 'integration-test-host',
+      filename: 'middleware.test.ts',
     });
 
     // Test the middleware functionality by simulating what the middleware would do
@@ -128,15 +116,10 @@ if (runIntegrationTests) {
   test('integration: error handling with invalid data', async (t) => {
     const dc = create();
 
-    await new Promise<void>((resolve) => {
-      dc.init(
-        {
-          apiKey: 'invalid_api_key', // Use invalid API key to test error handling
-          orgName: ORG_NAME,
-          deviceTag: 'error_test_device',
-        },
-        resolve,
-      );
+    dc.init({
+      apiKey: 'invalid_api_key', // Use invalid API key to test error handling
+      orgName: ORG_NAME,
+      deviceTag: 'error_test_device',
     });
 
     // Add an event that should fail due to invalid API key
@@ -177,15 +160,10 @@ if (runIntegrationTests) {
   test('integration: batch processing', async (t) => {
     const dc = create();
 
-    await new Promise<void>((resolve) => {
-      dc.init(
-        {
-          apiKey: API_KEY!,
-          orgName: ORG_NAME,
-          deviceTag: 'batch_test_device',
-        },
-        resolve,
-      );
+    dc.init({
+      apiKey: API_KEY!,
+      orgName: ORG_NAME,
+      deviceTag: 'batch_test_device',
     });
 
     // Add more events than the batch size (EVENT_SEND_COUNT = 10)
@@ -212,15 +190,10 @@ if (runIntegrationTests) {
   test('integration: log batch processing', async (t) => {
     const dc = create();
 
-    await new Promise<void>((resolve) => {
-      dc.init(
-        {
-          apiKey: API_KEY!,
-          orgName: ORG_NAME,
-          hostname: 'batch-log-test',
-        },
-        resolve,
-      );
+    dc.init({
+      apiKey: API_KEY!,
+      orgName: ORG_NAME,
+      hostname: 'batch-log-test',
     });
 
     // Add more logs than the batch size (LOG_SEND_COUNT = 100)

@@ -106,20 +106,6 @@ test('init uses os.hostname() when hostname not provided', () => {
   assert.ok(typeof dc.defaultLogBundle.hostname === 'string');
 });
 
-test('init calls done callback when provided', (t, done) => {
-  const dc = new DataCortex();
-  dc.init(
-    {
-      apiKey: API_KEY,
-      orgName: ORG_NAME,
-    },
-    () => {
-      assert.strictEqual(dc.isReady, true);
-      done();
-    },
-  );
-});
-
 test('setDeviceTag sets device tag', () => {
   const dc = new DataCortex();
   dc.init({ apiKey: API_KEY, orgName: ORG_NAME });
