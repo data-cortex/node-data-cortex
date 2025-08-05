@@ -14,6 +14,7 @@ interface InitOptions {
     hostname?: string;
     filename?: string;
     noHupHandler?: boolean;
+    errorLog?: (...args: unknown[]) => void;
 }
 interface BaseEventProps {
     [key: string]: unknown;
@@ -89,6 +90,7 @@ declare class DataCortex {
     private logDelayCount;
     private defaultLogBundle;
     private hasHupHandler;
+    private errorLog;
     constructor();
     init(opts: InitOptions): void;
     setDeviceTag(tag: string): void;

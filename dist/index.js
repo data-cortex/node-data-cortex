@@ -127,6 +127,7 @@ class DataCortex {
     logDelayCount;
     defaultLogBundle;
     hasHupHandler = false;
+    errorLog;
     constructor() {
         this.apiBaseUrl = API_BASE_URL;
         this.isReady = false;
@@ -144,6 +145,7 @@ class DataCortex {
         this.isLogSending = false;
         this.logDelayCount = 0;
         this.defaultLogBundle = {};
+        this.errorLog = _errorLog;
         return this;
     }
     init(opts) {
@@ -157,6 +159,10 @@ class DataCortex {
         this.orgName = opts.orgName;
         this.appVer = opts.appVer || '0';
         this.apiBaseUrl = opts.baseUrl || API_BASE_URL;
+        // Set errorLog function if provided, otherwise keep default
+        if (opts.errorLog) {
+            this.errorLog = opts.errorLog;
+        }
         this.defaultBundle = {
             app_ver: opts.appVer || '0',
             device_type: opts.deviceType || '',
@@ -431,10 +437,10 @@ class DataCortex {
             _request({ url, body: bundle }, (err, body) => {
                 let remove = true;
                 if (err === 400) {
-                    _errorLog('Bad request, please check parameters, error:', body);
+                    this.errorLog('Bad request, please check parameters, error:', body);
                 }
                 else if (err === 403) {
-                    _errorLog('Bad API Key, error:', body);
+                    this.errorLog('Bad API Key, error:', body);
                     this.isReady = false;
                 }
                 else if (err === 409) ;
@@ -481,10 +487,10 @@ class DataCortex {
             _request({ url, body: bundle }, (err, body) => {
                 let remove = true;
                 if (err === 400) {
-                    _errorLog('Bad request, please check parameters, error:', body);
+                    this.errorLog('Bad request, please check parameters, error:', body);
                 }
                 else if (err === 403) {
-                    _errorLog('Bad API Key, error:', body);
+                    this.errorLog('Bad API Key, error:', body);
                 }
                 else if (err === 409) ;
                 else if (err) {
