@@ -14,7 +14,7 @@ export type {
   LogEventProps,
 } from './data_cortex';
 
-export type { CreateLoggerParams } from './middleware';
+export type { CreateLoggerParams, MiddlewareLogEvent } from './middleware';
 
 // Export the DataCortex class and create function
 export { DataCortex, create };

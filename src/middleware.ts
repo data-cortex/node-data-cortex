@@ -5,10 +5,19 @@ import type { Request, Response } from 'express';
 
 export default { createLogger };
 
+
+export interface MiddlewareLogEvent extends LogEventProps {
+  event_datetime: Date;
+  response_ms: number;
+  response_bytes: number;
+  log_level: string;
+  log_line: string;
+}
+
 export interface CreateLoggerParams {
   dataCortex: DataCortex;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  prepareEvent?: (req: any, res: any, event: LogEventProps) => void;
+  prepareEvent?: (req: any, res: any, event: MiddlewareLogEvent) => void;
   logConsole?: boolean;
 }
 type CreateLoggerResult = (
@@ -26,7 +35,7 @@ export function createLogger(params: CreateLoggerParams): CreateLoggerResult {
       const response_ms = Date.now() - start_time;
       const response_bytes = res.getHeader('content-length') || 0;
       const event_datetime = new Date();
-      const event: LogEventProps = {
+      const event: MiddlewareLogEvent = {
         event_datetime,
         response_ms,
         response_bytes: typeof response_bytes === 'number' ? response_bytes : 0,
@@ -45,7 +54,7 @@ export function createLogger(params: CreateLoggerParams): CreateLoggerResult {
       const ua = expressReq.get('user-agent');
       _fillUserAgent(event, ua);
       prepareEvent?.(expressReq, expressRes, event);
-      dataCortex.logEvent(event);
+      dataCortex.logEvent(event as LogEventProps);
       if (logConsole) {
         console.log(
           `${event.remote_address} - - [${event_datetime.toUTCString()}] "${event.log_line}" ${event.log_level} ${event.response_ms}(ms) "${event.filename ?? ''}" "${ua ?? ''}"`,

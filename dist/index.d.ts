@@ -114,9 +114,16 @@ declare class DataCortex {
 }
 declare function create(): DataCortex;
 
+interface MiddlewareLogEvent extends LogEventProps {
+    event_datetime: Date;
+    response_ms: number;
+    response_bytes: number;
+    log_level: string;
+    log_line: string;
+}
 interface CreateLoggerParams {
     dataCortex: DataCortex;
-    prepareEvent?: (req: any, res: any, event: LogEventProps) => void;
+    prepareEvent?: (req: any, res: any, event: MiddlewareLogEvent) => void;
     logConsole?: boolean;
 }
 type CreateLoggerResult = (req: unknown, res: unknown, next: () => void) => void;
@@ -154,4 +161,4 @@ declare const _default: {
 };
 
 export { DataCortex, create, createLogger, dau, _default as default, defaultObject, economy, event, flush, init, install, log, logEvent, messageClick, messageSend, setDeviceTag, setUserTag };
-export type { BaseEventProps, CreateLoggerParams, DauProps, EconomyProps, EventProps, InitOptions, InstallProps, LogEventProps, MessageClickProps, MessageSendProps };
+export type { BaseEventProps, CreateLoggerParams, DauProps, EconomyProps, EventProps, InitOptions, InstallProps, LogEventProps, MessageClickProps, MessageSendProps, MiddlewareLogEvent };

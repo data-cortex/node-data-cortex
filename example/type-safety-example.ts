@@ -5,6 +5,7 @@ import type {
   MessageSendProps,
   EconomyProps,
   LogEventProps,
+  MiddlewareLogEvent,
 } from '../dist/index.js';
 
 // Example of proper type usage
@@ -62,6 +63,18 @@ const logData: LogEventProps = {
 };
 
 dataCortex.logEvent(logData);
+
+// MiddlewareLogEvent for logging
+const middlewareLogData: MiddlewareLogEvent = {
+  event_datetime: new Date(),
+  response_ms: 150,
+  response_bytes: 1024,
+  log_level: 'info',
+  log_line: 'User completed tutorial',
+  device_tag: 'device-123',
+};
+
+dataCortex.logEvent(middlewareLogData);
 
 // TypeScript will catch these errors at compile time:
 

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { createLogger, CreateLoggerParams } from '../src/middleware';
+import { createLogger, CreateLoggerParams, MiddlewareLogEvent } from '../src/middleware';
 import { DataCortex } from '../src/data_cortex';
 import { EventEmitter } from 'node:events';
 
@@ -475,7 +475,7 @@ test('middleware calls prepareEvent callback when provided', (t, done) => {
   let prepareEventCalled = false;
   const middleware = createLogger({
     dataCortex: dc,
-    prepareEvent: (req, res, event) => {
+    prepareEvent: (req, res, event: MiddlewareLogEvent) => {
       prepareEventCalled = true;
       event.user_tag = 'test_user';
     },
