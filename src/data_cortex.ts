@@ -45,6 +45,7 @@ export interface InitOptions {
 
 // Base properties that can be used in events
 export interface BaseEventProps {
+  [key: string]: unknown;
   kingdom?: string;
   phylum?: string;
   class?: string;
@@ -60,7 +61,6 @@ export interface BaseEventProps {
   event_datetime?: string | Date;
   device_tag?: string;
   user_tag?: string;
-  [key: string]: unknown;
 }
 
 // Specific props for DataCortex.event() - only includes general event properties
@@ -93,6 +93,7 @@ export interface EconomyProps extends BaseEventProps {
 
 // Log event properties
 export interface LogEventProps {
+  [key: string]: unknown;
   event_datetime?: string | Date;
   response_bytes?: number;
   response_ms?: number;
@@ -110,11 +111,11 @@ export interface LogEventProps {
   browser_ver?: string;
   country?: string;
   language?: string;
-  [key: string]: unknown;
 }
 
 // Internal types (not exported as they're implementation details)
 interface InternalEventProps extends BaseEventProps {
+  [key: string]: unknown;
   spend_currency?: string;
   spend_type?: string;
   network?: string;
@@ -124,10 +125,10 @@ interface InternalEventProps extends BaseEventProps {
   spend_amount?: number;
   type?: string;
   event_index?: number;
-  [key: string]: unknown;
 }
 
 interface Bundle {
+  [key: string]: unknown;
   api_key: string | false;
   app_ver?: string;
   server_ver?: string;
@@ -145,7 +146,6 @@ interface Bundle {
   language?: string;
   group_tag?: string;
   events?: InternalEventProps[];
-  [key: string]: unknown;
 }
 
 interface LogBundle extends Bundle {
@@ -259,6 +259,7 @@ export class DataCortex {
     this.isReady = true;
     done();
   }
+
   public setDeviceTag(tag: string): void {
     if (tag) {
       this.defaultBundle.device_tag = tag;
@@ -266,6 +267,7 @@ export class DataCortex {
       delete this.defaultBundle.device_tag;
     }
   }
+
   public setUserTag(tag: string): void {
     if (tag) {
       this.defaultBundle.user_tag = tag;
@@ -273,6 +275,7 @@ export class DataCortex {
       delete this.defaultBundle.user_tag;
     }
   }
+
   public install(props: InstallProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
@@ -286,12 +289,14 @@ export class DataCortex {
     }
     this._internalEventAdd(props, 'dau');
   }
+
   public event(props: EventProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
     }
     this._internalEventAdd(props, 'event');
   }
+
   public messageSend(props: MessageSendProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
@@ -307,6 +312,7 @@ export class DataCortex {
     }
     this._internalEventAdd(props, 'message_send');
   }
+
   public messageClick(props: MessageClickProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
@@ -322,6 +328,7 @@ export class DataCortex {
     }
     this._internalEventAdd(props, 'message_click');
   }
+
   public economy(props: EconomyProps): void {
     if (!props || typeof props !== 'object') {
       throw new Error('props must be an object');
@@ -337,10 +344,83 @@ export class DataCortex {
     }
     this._internalEventAdd(props, 'economy');
   }
+
   public flush(): void {
     this._sendEvents();
     this._sendLogs();
   }
+
+  public log(...args: unknown[]): void {
+    if (!args || args.length === 0) {
+      throw new Error('log must have arguments');
+    }
+    let log_line = '';
+    for (let i = 0; i < args.length; i++) {
+      const arg = args[i];
+      if (i > 0) {
+        log_line += ' ';
+      }
+
+      if (_isError(arg)) {
+        log_line += (arg as Error).stack;
+      } else if (typeof arg === 'object' && arg !== null) {
+        try {
+          log_line += JSON.stringify(arg);
+        } catch (_e) {
+          log_line += String(arg);
+        }
+      } else {
+        log_line += String(arg);
+      }
+    }
+    this.logEvent({ log_line });
+  }
+
+  public logEvent(props: LogEventProps): void {
+    if (!props || typeof props !== 'object') {
+      throw new Error('props must be an object.');
+    }
+
+    if (!props.event_datetime) {
+      props.event_datetime = new Date().toISOString();
+    }
+
+    _objectEach(LOG_STRING_PROP_MAP, (max_len: number, p: string) => {
+      if (p in props) {
+        const val = props[p];
+        const s =
+          val && typeof val === 'object' && 'toString' in val
+            ? val.toString()
+            : String(val);
+        if (s && s !== 'undefined' && s !== 'null') {
+          props[p] = s.slice(0, max_len);
+        } else {
+          (props as Record<string, unknown>)[p] = undefined;
+        }
+      }
+    });
+    LOG_NUMBER_PROP_LIST.forEach((p) => {
+      if (p in props) {
+        const val = props[p];
+        let numVal: number;
+        if (typeof val !== 'number') {
+          numVal = parseFloat(String(val));
+        } else {
+          numVal = val;
+        }
+        if (isFinite(numVal)) {
+          props[p] = numVal;
+        } else {
+          (props as Record<string, unknown>)[p] = undefined;
+        }
+      }
+    });
+
+    const e = _pick(props, LOG_PROP_LIST);
+    this.logList.push(e);
+    this._sendLogsLater();
+  }
+
   private _internalEventAdd(
     input_props: InternalEventProps,
     type: string,
@@ -388,6 +468,7 @@ export class DataCortex {
     this.eventList.push(_pick(props, BUNDLE_PROP_LIST));
     this._sendEventsLater();
   }
+
   private _sendEventsLater(delay?: number): void {
     if (!delay) {
       delay = 0;
@@ -399,6 +480,7 @@ export class DataCortex {
       }, delay);
     }
   }
+
   private _sendEvents(): void {
     if (this.isReady && !this.isSending && this.eventList.length > 0) {
       this.isSending = true;
@@ -462,83 +544,17 @@ export class DataCortex {
       });
     }
   }
+
   private _removeEvents(event_list: InternalEventProps[]): void {
     this.eventList = this.eventList.filter(
       (e) => !event_list.some((e2) => e.event_index === e2.event_index),
     );
   }
-  public log(...args: unknown[]): void {
-    if (!args || args.length === 0) {
-      throw new Error('log must have arguments');
-    }
-    let log_line = '';
-    for (let i = 0; i < args.length; i++) {
-      const arg = args[i];
-      if (i > 0) {
-        log_line += ' ';
-      }
 
-      if (_isError(arg)) {
-        log_line += (arg as Error).stack;
-      } else if (typeof arg === 'object' && arg !== null) {
-        try {
-          log_line += JSON.stringify(arg);
-        } catch (_e) {
-          log_line += String(arg);
-        }
-      } else {
-        log_line += String(arg);
-      }
-    }
-    this.logEvent({ log_line });
-  }
-  public logEvent(props: LogEventProps): void {
-    if (!props || typeof props !== 'object') {
-      throw new Error('props must be an object.');
-    }
-
-    if (!props.event_datetime) {
-      props.event_datetime = new Date().toISOString();
-    }
-
-    _objectEach(LOG_STRING_PROP_MAP, (max_len: number, p: string) => {
-      if (p in props) {
-        const val = props[p];
-        const s =
-          val && typeof val === 'object' && 'toString' in val
-            ? val.toString()
-            : String(val);
-        if (s && s !== 'undefined' && s !== 'null') {
-          props[p] = s.slice(0, max_len);
-        } else {
-          (props as Record<string, unknown>)[p] = undefined;
-        }
-      }
-    });
-    LOG_NUMBER_PROP_LIST.forEach((p) => {
-      if (p in props) {
-        const val = props[p];
-        let numVal: number;
-        if (typeof val !== 'number') {
-          numVal = parseFloat(String(val));
-        } else {
-          numVal = val;
-        }
-        if (isFinite(numVal)) {
-          props[p] = numVal;
-        } else {
-          (props as Record<string, unknown>)[p] = undefined;
-        }
-      }
-    });
-
-    const e = _pick(props, LOG_PROP_LIST);
-    this.logList.push(e);
-    this._sendLogsLater();
-  }
   private _removeLogs(events: LogEventProps[]): void {
     this.logList.splice(0, events.length);
   }
+
   private _sendLogsLater(delay = 0): void {
     if (!this.logTimeout && this.isReady && !this.isLogSending) {
       this.logTimeout = setTimeout(() => {
@@ -547,6 +563,7 @@ export class DataCortex {
       }, delay);
     }
   }
+
   private _sendLogs(): void {
     if (this.isReady && !this.isLogSending && this.logList.length > 0) {
       this.isLogSending = true;
@@ -588,6 +605,7 @@ export class DataCortex {
     }
   }
 }
+
 function _isError(e: unknown): e is Error {
   return (
     e !== null &&
@@ -598,17 +616,20 @@ function _isError(e: unknown): e is Error {
     typeof (e as Error).message === 'string'
   );
 }
+
 function _defaultBundleEqual(
   a: InternalEventProps,
   b: InternalEventProps,
 ): boolean {
   return DEFAULT_BUNDLE_PROP_LIST.every((prop) => a[prop] === b[prop]);
 }
+
 function _errorLog(...args: unknown[]): void {
   const new_args: unknown[] = ['Data Cortex Error:'];
   new_args.push(...args);
   console.error(...new_args);
 }
+
 function _pick(
   obj: Record<string, unknown>,
   prop_list: string[],
@@ -622,6 +643,7 @@ function _pick(
   });
   return new_obj;
 }
+
 function _objectEach(
   object: Record<string, number>,
   callback: (
@@ -637,6 +659,7 @@ function _objectEach(
     }
   });
 }
+
 function _request(params: RequestParams, done: RequestCallback): void {
   let is_done = false;
   const opts: https.RequestOptions = {
@@ -681,7 +704,9 @@ function _request(params: RequestParams, done: RequestCallback): void {
   req.write(post_body);
   req.end();
 }
+
 export function create(): DataCortex {
   return new DataCortex();
 }
+
 export default { DataCortex, create };

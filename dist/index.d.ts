@@ -16,6 +16,7 @@ interface InitOptions {
     noHupHandler?: boolean;
 }
 interface BaseEventProps {
+    [key: string]: unknown;
     kingdom?: string;
     phylum?: string;
     class?: string;
@@ -31,7 +32,6 @@ interface BaseEventProps {
     event_datetime?: string | Date;
     device_tag?: string;
     user_tag?: string;
-    [key: string]: unknown;
 }
 type EventProps = BaseEventProps;
 type InstallProps = BaseEventProps;
@@ -52,6 +52,7 @@ interface EconomyProps extends BaseEventProps {
     spend_type?: string;
 }
 interface LogEventProps {
+    [key: string]: unknown;
     event_datetime?: string | Date;
     response_bytes?: number;
     response_ms?: number;
@@ -69,7 +70,6 @@ interface LogEventProps {
     browser_ver?: string;
     country?: string;
     language?: string;
-    [key: string]: unknown;
 }
 declare class DataCortex {
     private apiBaseUrl;
@@ -100,12 +100,12 @@ declare class DataCortex {
     messageClick(props: MessageClickProps): void;
     economy(props: EconomyProps): void;
     flush(): void;
+    log(...args: unknown[]): void;
+    logEvent(props: LogEventProps): void;
     private _internalEventAdd;
     private _sendEventsLater;
     private _sendEvents;
     private _removeEvents;
-    log(...args: unknown[]): void;
-    logEvent(props: LogEventProps): void;
     private _removeLogs;
     private _sendLogsLater;
     private _sendLogs;

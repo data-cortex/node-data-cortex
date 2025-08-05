@@ -279,6 +279,76 @@ class DataCortex {
         this._sendEvents();
         this._sendLogs();
     }
+    log(...args) {
+        if (!args || args.length === 0) {
+            throw new Error('log must have arguments');
+        }
+        let log_line = '';
+        for (let i = 0; i < args.length; i++) {
+            const arg = args[i];
+            if (i > 0) {
+                log_line += ' ';
+            }
+            if (_isError(arg)) {
+                log_line += arg.stack;
+            }
+            else if (typeof arg === 'object' && arg !== null) {
+                try {
+                    log_line += JSON.stringify(arg);
+                }
+                catch (_e) {
+                    log_line += String(arg);
+                }
+            }
+            else {
+                log_line += String(arg);
+            }
+        }
+        this.logEvent({ log_line });
+    }
+    logEvent(props) {
+        if (!props || typeof props !== 'object') {
+            throw new Error('props must be an object.');
+        }
+        if (!props.event_datetime) {
+            props.event_datetime = new Date().toISOString();
+        }
+        _objectEach(LOG_STRING_PROP_MAP, (max_len, p) => {
+            if (p in props) {
+                const val = props[p];
+                const s = val && typeof val === 'object' && 'toString' in val
+                    ? val.toString()
+                    : String(val);
+                if (s && s !== 'undefined' && s !== 'null') {
+                    props[p] = s.slice(0, max_len);
+                }
+                else {
+                    props[p] = undefined;
+                }
+            }
+        });
+        LOG_NUMBER_PROP_LIST.forEach((p) => {
+            if (p in props) {
+                const val = props[p];
+                let numVal;
+                if (typeof val !== 'number') {
+                    numVal = parseFloat(String(val));
+                }
+                else {
+                    numVal = val;
+                }
+                if (isFinite(numVal)) {
+                    props[p] = numVal;
+                }
+                else {
+                    props[p] = undefined;
+                }
+            }
+        });
+        const e = _pick(props, LOG_PROP_LIST);
+        this.logList.push(e);
+        this._sendLogsLater();
+    }
     _internalEventAdd(input_props, type) {
         if (!input_props.device_tag && !this.defaultBundle.device_tag) {
             throw new Error('device_tag is required');
@@ -391,76 +461,6 @@ class DataCortex {
     }
     _removeEvents(event_list) {
         this.eventList = this.eventList.filter((e) => !event_list.some((e2) => e.event_index === e2.event_index));
-    }
-    log(...args) {
-        if (!args || args.length === 0) {
-            throw new Error('log must have arguments');
-        }
-        let log_line = '';
-        for (let i = 0; i < args.length; i++) {
-            const arg = args[i];
-            if (i > 0) {
-                log_line += ' ';
-            }
-            if (_isError(arg)) {
-                log_line += arg.stack;
-            }
-            else if (typeof arg === 'object' && arg !== null) {
-                try {
-                    log_line += JSON.stringify(arg);
-                }
-                catch (_e) {
-                    log_line += String(arg);
-                }
-            }
-            else {
-                log_line += String(arg);
-            }
-        }
-        this.logEvent({ log_line });
-    }
-    logEvent(props) {
-        if (!props || typeof props !== 'object') {
-            throw new Error('props must be an object.');
-        }
-        if (!props.event_datetime) {
-            props.event_datetime = new Date().toISOString();
-        }
-        _objectEach(LOG_STRING_PROP_MAP, (max_len, p) => {
-            if (p in props) {
-                const val = props[p];
-                const s = val && typeof val === 'object' && 'toString' in val
-                    ? val.toString()
-                    : String(val);
-                if (s && s !== 'undefined' && s !== 'null') {
-                    props[p] = s.slice(0, max_len);
-                }
-                else {
-                    props[p] = undefined;
-                }
-            }
-        });
-        LOG_NUMBER_PROP_LIST.forEach((p) => {
-            if (p in props) {
-                const val = props[p];
-                let numVal;
-                if (typeof val !== 'number') {
-                    numVal = parseFloat(String(val));
-                }
-                else {
-                    numVal = val;
-                }
-                if (isFinite(numVal)) {
-                    props[p] = numVal;
-                }
-                else {
-                    props[p] = undefined;
-                }
-            }
-        });
-        const e = _pick(props, LOG_PROP_LIST);
-        this.logList.push(e);
-        this._sendLogsLater();
     }
     _removeLogs(events) {
         this.logList.splice(0, events.length);
