@@ -374,7 +374,7 @@ DataCortex.prototype.logEvent = function(props) {
 
   const e = _pick(props,LOG_PROP_LIST);
   this.logList.push(e);
-  this._sendLogsLater();
+  this._sendLogsLater(0);
   return e;
 };
 
@@ -386,7 +386,7 @@ function _isError(e) {
   return e && e.stack && e.message && typeof e.stack === 'string' && typeof e.message === 'string';
 }
 
-DataCortex.prototype._sendLogsLater = function(delay = 0) {
+DataCortex.prototype._sendLogsLater = function(delay) {
   if (!this.logTimeout && this.isReady && !this.isLogSending) {
     this.logTimeout = setTimeout(() => {
       this.logTimeout = false;
@@ -489,4 +489,5 @@ exports.dau = DataCortex.prototype.dau.bind(g_singleObject);
 exports.event = DataCortex.prototype.event.bind(g_singleObject);
 exports.economy = DataCortex.prototype.economy.bind(g_singleObject);
 exports.log = DataCortex.prototype.log.bind(g_singleObject);
+exports.logEvent = DataCortex.prototype.logEvent.bind(g_singleObject);
 exports.create = create;

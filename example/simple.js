@@ -27,6 +27,11 @@ dataCortex.event({ device_tag: '123', kingdom: "newline", });
 dataCortex.log("This is a log line");
 dataCortex.log("This is a log line with args",1,"foo",new Date(),new Error());
 
+dataCortex.logEvent({
+  log_level: "ERROR",
+  log_line: "This is a log line event",
+});
+
 dataCortex.flush();
 
 console.log("flushed, waiting");
